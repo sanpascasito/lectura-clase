@@ -1,1097 +1,1012 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Biblioteca de Aula - Lectura de 24 Alumnos</title>
-  
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Chart.js for Histogram -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- FontAwesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Google Font: Inter & Fredoka -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lecturómetro de la Clase: Registro y Histograma de Lectura</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js CDN for Animated Histogram -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Inter', 'sans-serif'],
-            display: ['Fredoka', 'sans-serif'],
-          }
+    <!-- Custom Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #f8fafc;
         }
-      }
-    }
-  </script>
-
-  <style>
-    body {
-      font-family: 'Inter', sans-serif;
-      background-color: #f8fafc;
-      color: #0f172a;
-    }
-    .font-display {
-      font-family: 'Fredoka', sans-serif;
-    }
-    ::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
-    }
-    ::-webkit-scrollbar-track {
-      background: #f1f5f9;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #cbd5e1;
-      border-radius: 4px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #94a3b8;
-    }
-    .student-card {
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .student-card:hover {
-      transform: translateY(-2px);
-    }
-  </style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        .pulse-subtle {
+            animation: pulse-border 2s infinite;
+        }
+        @keyframes pulse-border {
+            0%, 100% { border-color: rgba(16, 185, 129, 0.4); }
+            50% { border-color: rgba(16, 185, 129, 0.9); }
+        }
+    </style>
 </head>
-<body class="min-h-screen bg-slate-50 text-slate-800 flex flex-col selection:bg-blue-100 selection:text-blue-800">
+<body class="text-slate-800 antialiased min-h-screen flex flex-col justify-between">
 
-  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2">
-      
-      <!-- Brand Logo & Title -->
-      <div class="flex items-center space-x-3 min-w-0">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-blue-500/20 shrink-0">
-          <i class="fa-solid fa-book-bookmark text-lg"></i>
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5">
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                
+                <!-- Logo & Title -->
+                <div class="flex items-center space-x-3 text-center sm:text-left">
+                    <div class="w-12 h-12 bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-200 shrink-0">
+                        <i class="fa-solid fa-book-bookmark text-2xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl sm:text-2xl font-bold bg-gradient-to-r from-indigo-700 via-purple-700 to-pink-600 bg-clip-text text-transparent">
+                            Lecturómetro de la Clase
+                        </h1>
+                        <p class="text-xs sm:text-sm text-slate-500 font-medium">Registro y Histograma de Lectura Escolar</p>
+                    </div>
+                </div>
+
+                <!-- Persistence Status & Action Buttons -->
+                <div class="flex flex-wrap items-center justify-center gap-2">
+                    <!-- Local Auto-Save Indicator -->
+                    <div id="local-status-badge" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                        <i class="fa-solid fa-hard-drive text-emerald-600"></i>
+                        <span>Guardado Local</span>
+                    </div>
+
+                    <!-- Cloud Sync Button & Status -->
+                    <button id="btn-open-cloud" class="flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-slate-100 hover:bg-indigo-50 text-slate-700 hover:text-indigo-700 border border-slate-200 hover:border-indigo-300 transition text-xs font-semibold shadow-sm">
+                        <i class="fa-solid fa-cloud text-indigo-500"></i>
+                        <span id="cloud-status-text">Sincronización Cloud</span>
+                    </button>
+
+                    <!-- Tools Dropdown / Quick Actions -->
+                    <div class="flex items-center space-x-1 pl-2 border-l border-slate-200">
+                        <button id="btn-export-csv" title="Exportar a CSV / Excel" class="p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition">
+                            <i class="fa-solid fa-file-csv text-emerald-600 text-lg"></i>
+                        </button>
+                        <button id="btn-export-json" title="Copia de Seguridad (JSON)" class="p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition">
+                            <i class="fa-solid fa-download text-indigo-600 text-base"></i>
+                        </button>
+                        <label title="Importar Copia JSON" class="p-2 rounded-xl text-slate-600 hover:bg-slate-100 cursor-pointer transition">
+                            <i class="fa-solid fa-upload text-purple-600 text-base"></i>
+                            <input type="file" id="input-import-json" accept=".json" class="hidden">
+                        </label>
+                        <button id="btn-reset-data" title="Restablecer Datos" class="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition">
+                            <i class="fa-solid fa-rotate-right text-base"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="min-w-0">
-          <h1 class="font-display font-bold text-base sm:text-lg text-slate-800 tracking-tight flex items-center gap-2 truncate">
-            Lectura en Clase
-            <span class="text-[11px] bg-blue-100 text-blue-700 font-sans font-semibold px-2 py-0.5 rounded-full border border-blue-200 shrink-0">24 Alumnos</span>
-          </h1>
-          <p class="text-[11px] text-slate-500 hidden sm:block truncate">Histograma interactivo y sincronización en tiempo real</p>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full space-y-6 flex-grow">
+
+        <!-- Top Summary Metric Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            
+            <!-- Card 1: Total Books -->
+            <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm hover:shadow-md transition">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Leídos</p>
+                        <h3 id="stat-total-books" class="text-3xl font-extrabold text-indigo-900 mt-1">0</h3>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-book-open"></i>
+                    </div>
+                </div>
+                <p class="text-xs text-slate-500 mt-3 flex items-center gap-1">
+                    <i class="fa-solid fa-circle-check text-emerald-500"></i> Suma general del grupo
+                </p>
+            </div>
+
+            <!-- Card 2: Average Per Student -->
+            <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm hover:shadow-md transition">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Promedio / Alumno</p>
+                        <h3 id="stat-avg-books" class="text-3xl font-extrabold text-purple-900 mt-1">0.0</h3>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-calculator"></i>
+                    </div>
+                </div>
+                <p class="text-xs text-slate-500 mt-3 flex items-center gap-1">
+                    <i class="fa-solid fa-chart-line text-purple-500"></i> Libros por lector
+                </p>
+            </div>
+
+            <!-- Card 3: Top Readers -->
+            <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm hover:shadow-md transition">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Máximo Lector</p>
+                        <h3 id="stat-leader-name" class="text-lg font-bold text-amber-900 mt-1 truncate max-w-[160px] sm:max-w-[180px]">
+                            -
+                        </h3>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-trophy"></i>
+                    </div>
+                </div>
+                <p id="stat-leader-count" class="text-xs text-amber-700 font-semibold mt-3 flex items-center gap-1">
+                    <i class="fa-solid fa-star text-amber-500"></i> 0 libros leídos
+                </p>
+            </div>
+
+            <!-- Card 4: Total Active Students -->
+            <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm hover:shadow-md transition">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Alumnos En Lista</p>
+                        <h3 id="stat-total-students" class="text-3xl font-extrabold text-emerald-900 mt-1">24</h3>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                </div>
+                <p class="text-xs text-slate-500 mt-3 flex items-center gap-1">
+                    <i class="fa-solid fa-graduation-cap text-emerald-600"></i> Clase completa pre-cargada
+                </p>
+            </div>
         </div>
-      </div>
 
-      <!-- Realtime Status & Top Controls -->
-      <div class="flex items-center space-x-1.5 sm:space-x-3 shrink-0">
-        <!-- Live Connection Badge -->
-        <div id="sync-status" class="flex items-center space-x-1.5 text-xs font-medium px-2.5 py-1.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 transition-all">
-          <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-          <span id="sync-text" class="hidden md:inline">Conectando...</span>
+        <!-- Toolbar Controls: Search, Sort, Add Student, View Mode -->
+        <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex flex-col md:flex-row items-center justify-between gap-3">
+            
+            <!-- Search Bar -->
+            <div class="relative w-full md:w-80">
+                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                <input type="text" id="input-search" placeholder="Buscar por nombre de alumno..." 
+                    class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition">
+            </div>
+
+            <div class="flex flex-wrap items-center justify-end gap-2 w-full md:w-auto">
+                <!-- Sorting Mode -->
+                <div class="flex items-center space-x-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-600">
+                    <i class="fa-solid fa-arrow-down-wide-short text-slate-400"></i>
+                    <span>Orden:</span>
+                    <select id="select-sort" class="bg-transparent font-semibold text-slate-800 focus:outline-none cursor-pointer">
+                        <option value="number">Nº Lista (Alfabético)</option>
+                        <option value="books-desc">Mayor nº de libros</option>
+                        <option value="books-asc">Menor nº de libros</option>
+                    </select>
+                </div>
+
+                <!-- Add Student Button -->
+                <button id="btn-open-add-modal" class="flex items-center space-x-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-medium rounded-xl text-sm shadow-sm transition">
+                    <i class="fa-solid fa-user-plus text-xs"></i>
+                    <span>Añadir Alumno</span>
+                </button>
+            </div>
         </div>
 
-        <!-- Export/Backup Dropdown -->
-        <div class="relative">
-          <button id="btn-export-menu" class="text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-2.5 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5">
-            <i class="fa-solid fa-download text-xs"></i>
-            <span class="hidden sm:inline">Respaldar</span>
-          </button>
-          <div id="export-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-200 py-1.5 z-40">
-            <button id="btn-export-json" class="w-full text-left px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2">
-              <i class="fa-solid fa-file-code text-blue-500"></i> Exportar Copia (JSON)
-            </button>
-            <button id="btn-export-csv" class="w-full text-left px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2">
-              <i class="fa-solid fa-file-excel text-emerald-500"></i> Exportar Tabla (CSV)
-            </button>
-            <hr class="my-1 border-slate-100">
-            <button id="btn-import-open" class="w-full text-left px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2">
-              <i class="fa-solid fa-upload text-indigo-500"></i> Importar Datos
-            </button>
-          </div>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            
+            <!-- Left / Main: Dynamic Histogram Chart Card -->
+            <div class="lg:col-span-12 bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 sm:p-6 space-y-4">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-chart-column text-indigo-600"></i>
+                            Histograma de Lectura
+                        </h2>
+                        <p class="text-xs text-slate-500">Visualización interactiva del progreso de la clase</p>
+                    </div>
+
+                    <div class="flex items-center space-x-3 text-xs">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-indigo-50 text-indigo-700 font-medium">
+                            <span class="w-2.5 h-2.5 rounded-full bg-indigo-500"></span> Barras de Lectura
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Chart Canvas Container -->
+                <div class="relative w-full h-[320px] sm:h-[380px] pt-2">
+                    <canvas id="histogramChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Student Cards List Section -->
+            <div class="lg:col-span-12 bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 sm:p-6 space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-list-ol text-purple-600"></i>
+                            Listado de Alumnos y Registros
+                        </h2>
+                        <p class="text-xs text-slate-500">Suma o resta libros con un clic o escribe la cifra exacta</p>
+                    </div>
+                    <span id="students-counter-badge" class="px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 font-semibold text-xs">
+                        24 alumnos
+                    </span>
+                </div>
+
+                <!-- Student Grid -->
+                <div id="student-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 max-h-[600px] overflow-y-auto custom-scrollbar pr-1">
+                    <!-- Cards will be populated dynamically -->
+                </div>
+            </div>
+
         </div>
 
-        <!-- Batch Names Button -->
-        <button id="btn-batch-modal" class="text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-2.5 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5" title="Editar nombres">
-          <i class="fa-solid fa-users-gear text-xs"></i>
-          <span class="hidden md:inline">Lista Nombres</span>
-        </button>
+    </main>
 
-        <!-- Reset Button -->
-        <button id="btn-reset-modal" class="text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 px-2.5 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5" title="Reiniciar contadores">
-          <i class="fa-solid fa-arrow-rotate-left text-xs"></i>
-          <span class="hidden md:inline">Reiniciar</span>
-        </button>
-      </div>
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500 mt-8">
+        <p>Lecturómetro de la Clase &copy; Sistema educativo de seguimiento de lectura con guardado persistente local y en la nube.</p>
+    </footer>
+
+    
+    <!-- Cloud Sync Modal -->
+    <div id="modal-cloud" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 space-y-5 animate-in fade-in zoom-in duration-150">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold text-slate-800">Sincronización Cloud</h3>
+                        <p class="text-xs text-slate-500">Conecta varios ordenadores o móviles</p>
+                    </div>
+                </div>
+                <button class="btn-close-modal text-slate-400 hover:text-slate-600 p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <p class="text-xs text-slate-600 leading-relaxed">
+                Introduce una clave o código único para tu aula (ejemplo: <strong class="text-indigo-700">aula-3a-2025</strong>). Todos los dispositivos que introduzcan este mismo código compartirán los datos en tiempo real.
+            </p>
+
+            <div class="space-y-2">
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Código de Sala / Clase</label>
+                <div class="relative">
+                    <input type="text" id="input-room-code" placeholder="Ej: mi-clase-lectura"
+                        class="w-full pl-3.5 pr-10 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-mono font-semibold text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <button id="btn-generate-code" title="Generar código aleatorio" class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-indigo-600 p-1.5">
+                        <i class="fa-solid fa-shuffle text-sm"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div id="cloud-connection-status" class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 flex items-center space-x-2">
+                <i class="fa-solid fa-info-circle text-indigo-500 text-sm"></i>
+                <span>Estado: Sin conectar a la nube (solo guardado local)</span>
+            </div>
+
+            <div class="flex items-center justify-end space-x-2 pt-2 border-t border-slate-100">
+                <button id="btn-disconnect-cloud" class="px-3.5 py-2 rounded-xl border border-slate-300 text-slate-600 hover:bg-slate-100 text-xs font-semibold transition hidden">
+                    Desconectar
+                </button>
+                <button id="btn-connect-cloud" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-sm transition">
+                    Conectar y Sincronizar
+                </button>
+            </div>
+        </div>
     </div>
-  </header>
 
-  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <!-- Add Student Modal -->
+    <div id="modal-add-student" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-user-plus text-indigo-600"></i>
+                    Añadir Nuevo Alumno
+                </h3>
+                <button class="btn-close-modal text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
 
-    <!-- KPI Statistics Summary Bar -->
-    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      
-      <!-- Total Books Read -->
-      <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs flex items-center space-x-4">
-        <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl shrink-0">
-          <i class="fa-solid fa-books"></i>
-        </div>
-        <div class="min-w-0">
-          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Leídos</p>
-          <div class="flex items-baseline space-x-1.5">
-            <span id="stat-total-books" class="text-2xl font-bold font-display text-slate-800">0</span>
-            <span class="text-xs text-slate-400">libros en total</span>
-          </div>
-        </div>
-      </div>
+            <div class="space-y-3 pt-2">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Nombre Completo (Apellidos, Nombre)</label>
+                    <input type="text" id="input-new-student-name" placeholder="Ej: García López, Lucía"
+                        class="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Libros Iniciales</label>
+                    <input type="number" id="input-new-student-books" value="0" min="0"
+                        class="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+            </div>
 
-      <!-- Average per Student -->
-      <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs flex items-center space-x-4">
-        <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shrink-0">
-          <i class="fa-solid fa-chart-line"></i>
+            <div class="flex items-center justify-end space-x-2 pt-3">
+                <button class="btn-close-modal px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl text-xs font-semibold">
+                    Cancelar
+                </button>
+                <button id="btn-save-new-student" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-sm">
+                    Guardar Alumno
+                </button>
+            </div>
         </div>
-        <div class="min-w-0">
-          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Promedio Clase</p>
-          <div class="flex items-baseline space-x-1.5">
-            <span id="stat-avg-books" class="text-2xl font-bold font-display text-slate-800">0.0</span>
-            <span class="text-xs text-slate-400">libros/alumno</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Top Reader Highlight -->
-      <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs flex items-center space-x-4">
-        <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl shrink-0">
-          <i class="fa-solid fa-trophy"></i>
-        </div>
-        <div class="min-w-0 truncate">
-          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Lector Destacado</p>
-          <p id="stat-top-reader" class="text-sm font-bold font-display text-slate-800 truncate">Sin lecturas</p>
-          <p id="stat-top-count" class="text-xs text-slate-400">0 libros leídos</p>
-        </div>
-      </div>
-
-      <!-- Class Collective Goal Progress -->
-      <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs flex flex-col justify-between">
-        <div class="flex items-center justify-between mb-1">
-          <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Meta del Curso</span>
-          <select id="goal-selector" class="text-xs border border-slate-200 rounded-lg px-2 py-0.5 bg-slate-50 text-slate-700 font-medium focus:outline-none focus:ring-1 focus:ring-blue-500">
-            <option value="100">100 libros</option>
-            <option value="200" selected>200 libros</option>
-            <option value="300">300 libros</option>
-            <option value="500">500 libros</option>
-            <option value="1000">1000 libros</option>
-          </select>
-        </div>
-        <div>
-          <div class="flex justify-between items-baseline mb-1">
-            <span id="goal-percent-text" class="text-sm font-bold text-indigo-600">0%</span>
-            <span id="goal-fraction-text" class="text-xs text-slate-500">0 / 200</span>
-          </div>
-          <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
-            <div id="goal-bar" class="bg-gradient-to-r from-blue-500 to-indigo-600 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
-          </div>
-        </div>
-      </div>
-
-    </section>
-
-    <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-2 rounded-2xl border border-slate-200/80 shadow-xs">
-      <!-- Tabs -->
-      <nav class="flex space-x-1 bg-slate-100 p-1 rounded-xl overflow-x-auto" aria-label="Tabs">
-        <button id="tab-histogram" class="tab-btn active px-3.5 py-2 text-xs sm:text-sm font-semibold rounded-lg transition-all flex items-center gap-2 bg-white text-blue-600 shadow-xs">
-          <i class="fa-solid fa-chart-column"></i>
-          <span>Histograma</span>
-        </button>
-        <button id="tab-grid" class="tab-btn px-3.5 py-2 text-xs sm:text-sm font-semibold text-slate-600 hover:text-slate-900 rounded-lg transition-all flex items-center gap-2">
-          <i class="fa-solid fa-users"></i>
-          <span>Tarjetas (24)</span>
-        </button>
-        <button id="tab-leaderboard" class="tab-btn px-3.5 py-2 text-xs sm:text-sm font-semibold text-slate-600 hover:text-slate-900 rounded-lg transition-all flex items-center gap-2">
-          <i class="fa-solid fa-ranking-star"></i>
-          <span>Ranking</span>
-        </button>
-      </nav>
-
-      <!-- Search & Sorting Controls -->
-      <div class="flex items-center space-x-2 px-1">
-        <div class="relative flex-1 sm:w-52">
-          <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-          <input type="text" id="search-input" placeholder="Buscar alumno..." class="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition">
-        </div>
-        <select id="sort-selector" class="text-xs border border-slate-200 rounded-lg px-2.5 py-1.5 bg-slate-50 text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20">
-          <option value="id-asc">Nº Lista (1 - 24)</option>
-          <option value="name-asc">Nombre (A - Z)</option>
-          <option value="books-desc">Más Libros</option>
-          <option value="books-asc">Menos Libros</option>
-        </select>
-      </div>
     </div>
 
-    <section id="view-histogram" class="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200/80 shadow-xs space-y-4">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-100">
-        <div>
-          <h2 class="font-display font-bold text-lg text-slate-800">Histograma de Libros Leídos</h2>
-          <p class="text-xs text-slate-500">Visualización de barras en colores para los 24 alumnos de la clase</p>
+    <!-- Edit Student Modal -->
+    <div id="modal-edit-student" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-user-pen text-indigo-600"></i>
+                    Editar Alumno
+                </h3>
+                <button class="btn-close-modal text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <input type="hidden" id="edit-student-id">
+
+            <div class="space-y-3 pt-2">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Nombre Alumno</label>
+                    <input type="text" id="input-edit-student-name"
+                        class="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Libros Leídos</label>
+                    <input type="number" id="input-edit-student-books" min="0"
+                        class="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between pt-3">
+                <button id="btn-delete-student" class="px-3 py-2 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-xl text-xs font-semibold transition">
+                    <i class="fa-solid fa-trash-can mr-1"></i> Eliminar
+                </button>
+                <div class="flex items-center space-x-2">
+                    <button class="btn-close-modal px-3.5 py-2 text-slate-600 hover:bg-slate-100 rounded-xl text-xs font-semibold">
+                        Cancelar
+                    </button>
+                    <button id="btn-save-edit-student" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-sm">
+                        Guardar Cambios
+                    </button>
+                </div>
+            </div>
         </div>
-        <div class="flex items-center gap-2">
-          <button id="btn-chart-type" class="text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg transition flex items-center gap-1.5">
-            <i class="fa-solid fa-arrows-rotate text-xs"></i>
-            <span id="chart-type-text">Vista Horizontal</span>
-          </button>
+    </div>
+
+    <!-- Reset Confirmation Modal -->
+    <div id="modal-reset" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 text-center space-y-4">
+            <div class="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-xl mx-auto">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div>
+                <h3 class="text-lg font-bold text-slate-800">¿Restablecer todo?</h3>
+                <p class="text-xs text-slate-500 mt-1">
+                    Esta acción restaurará la lista original de los 24 alumnos y pondrá todos los marcadores de libros a 0.
+                </p>
+            </div>
+            <div class="flex items-center justify-center space-x-2 pt-2">
+                <button class="btn-close-modal px-4 py-2 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-xl text-xs font-semibold">
+                    Cancelar
+                </button>
+                <button id="btn-confirm-reset" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-semibold shadow-sm">
+                    Sí, Restablecer
+                </button>
+            </div>
         </div>
-      </div>
-
-      <!-- Chart Canvas Container -->
-      <div class="relative w-full h-[400px] sm:h-[480px]">
-        <canvas id="histogramChart"></canvas>
-      </div>
-
-      <!-- Legend Scale -->
-      <div class="flex flex-wrap items-center justify-center gap-3 pt-3 border-t border-slate-100 text-xs text-slate-600">
-        <span class="font-medium text-slate-400">Escala de colores:</span>
-        <span class="inline-flex items-center gap-1.5 bg-slate-100 px-2.5 py-1 rounded-full"><span class="w-3 h-3 rounded-full bg-slate-400"></span> 0 libros</span>
-        <span class="inline-flex items-center gap-1.5 bg-sky-50 text-sky-700 px-2.5 py-1 rounded-full"><span class="w-3 h-3 rounded-full bg-sky-400"></span> 1-4 libros</span>
-        <span class="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full"><span class="w-3 h-3 rounded-full bg-emerald-500"></span> 5-9 libros</span>
-        <span class="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 px-2.5 py-1 rounded-full"><span class="w-3 h-3 rounded-full bg-amber-500"></span> 10-19 libros</span>
-        <span class="inline-flex items-center gap-1.5 bg-purple-50 text-purple-700 px-2.5 py-1 rounded-full"><span class="w-3 h-3 rounded-full bg-purple-500"></span> 20+ libros</span>
-      </div>
-    </section>
-
-    <section id="view-grid" class="hidden space-y-4">
-      <div class="flex items-center justify-between">
-        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-          Alumnos (<span id="grid-count">24</span> registrados)
-        </p>
-        <p class="text-xs text-slate-400">Usa + / - para cambiar el contador al instante</p>
-      </div>
-
-      <!-- 24 Cards Grid -->
-      <div id="students-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        <!-- Generated dynamically via JS -->
-      </div>
-    </section>
-
-    <section id="view-leaderboard" class="hidden bg-white rounded-2xl p-4 sm:p-6 border border-slate-200/80 shadow-xs space-y-6">
-      <div class="pb-2 border-b border-slate-100">
-        <h2 class="font-display font-bold text-lg text-slate-800">Ranking de Lectura</h2>
-        <p class="text-xs text-slate-500">Clasificación según la cantidad de libros leídos</p>
-      </div>
-
-      <!-- Podium Top 3 Display -->
-      <div id="podium-container" class="grid grid-cols-3 gap-2 sm:gap-4 max-w-lg mx-auto pt-4 pb-4 items-end">
-        <!-- Dynamic Podium via JS -->
-      </div>
-
-      <!-- Leaderboard Table -->
-      <div class="overflow-x-auto border border-slate-200 rounded-xl">
-        <table class="w-full text-left text-sm text-slate-700">
-          <thead class="bg-slate-50 text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200">
-            <tr>
-              <th class="px-4 py-3 text-center w-16">Pos.</th>
-              <th class="px-4 py-3">Alumno</th>
-              <th class="px-4 py-3 text-center">Libros Leídos</th>
-              <th class="px-4 py-3">Nivel de Logro</th>
-            </tr>
-          </thead>
-          <tbody id="leaderboard-body" class="divide-y divide-slate-100">
-            <!-- Dynamic Rows via JS -->
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- MODAL: Edit Single Student -->
-  <div id="modal-edit-student" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 border border-slate-100">
-      <div class="flex items-center justify-between">
-        <h3 class="font-display font-bold text-lg text-slate-800">Editar Alumno</h3>
-        <button class="btn-close-modal text-slate-400 hover:text-slate-600 p-1 rounded-lg">
-          <i class="fa-solid fa-xmark text-lg"></i>
-        </button>
-      </div>
-      <div>
-        <label class="block text-xs font-medium text-slate-600 mb-1" for="edit-student-input-name">Nombre y Apellidos</label>
-        <input type="text" id="edit-student-input-name" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500">
-        <input type="hidden" id="edit-student-id">
-      </div>
-      <div>
-        <label class="block text-xs font-medium text-slate-600 mb-1" for="edit-student-input-books">Cantidad de libros leídos</label>
-        <input type="number" id="edit-student-input-books" min="0" max="999" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500">
-      </div>
-      <div class="flex justify-end space-x-2 pt-2">
-        <button class="btn-close-modal px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-xl transition">Cancelar</button>
-        <button id="btn-save-student" class="px-4 py-2 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-md shadow-blue-500/20 transition">Guardar Cambios</button>
-      </div>
     </div>
-  </div>
 
-  <!-- MODAL: Batch Edit 24 Names -->
-  <div id="modal-batch-names" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4 border border-slate-100">
-      <div class="flex items-center justify-between">
-        <h3 class="font-display font-bold text-lg text-slate-800">Lista Completa de 24 Alumnos</h3>
-        <button class="btn-close-modal text-slate-400 hover:text-slate-600 p-1 rounded-lg">
-          <i class="fa-solid fa-xmark text-lg"></i>
-        </button>
-      </div>
-      <p class="text-xs text-slate-500">Puedes modificar los 24 nombres (un nombre por línea):</p>
-      <textarea id="batch-names-textarea" rows="12" class="w-full p-3 text-xs font-mono border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Escribe un nombre por línea..."></textarea>
-      <div class="flex justify-between items-center pt-2">
-        <button id="btn-default-names" class="text-xs text-slate-500 hover:text-slate-800 underline">Restablecer Lista Original</button>
-        <div class="flex space-x-2">
-          <button class="btn-close-modal px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-xl transition">Cancelar</button>
-          <button id="btn-save-batch-names" class="px-4 py-2 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-md shadow-blue-500/20 transition">Guardar Lista</button>
-        </div>
-      </div>
-    </div>
-  </div>
+    <!-- Notification Toast Container -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
 
-  <!-- MODAL: Import Data JSON -->
-  <div id="modal-import" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 border border-slate-100">
-      <div class="flex items-center justify-between">
-        <h3 class="font-display font-bold text-lg text-slate-800">Importar Copia de Seguridad</h3>
-        <button class="btn-close-modal text-slate-400 hover:text-slate-600 p-1 rounded-lg">
-          <i class="fa-solid fa-xmark text-lg"></i>
-        </button>
-      </div>
-      <p class="text-xs text-slate-500">Selecciona un archivo JSON exportado previamente:</p>
-      <input type="file" id="import-file-input" accept=".json" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
-      <div class="flex justify-end space-x-2 pt-2">
-        <button class="btn-close-modal px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-xl transition">Cancelar</button>
-        <button id="btn-confirm-import" class="px-4 py-2 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-md transition">Cargar Datos</button>
-      </div>
-    </div>
-  </div>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-  <!-- MODAL: Confirmation Modal -->
-  <div id="modal-confirm" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4 border border-slate-100 text-center">
-      <div class="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-xl mx-auto">
-        <i class="fa-solid fa-triangle-exclamation"></i>
-      </div>
-      <h3 id="confirm-title" class="font-display font-bold text-lg text-slate-800">¿Estás seguro?</h3>
-      <p id="confirm-message" class="text-xs text-slate-500">Esta acción cambiará los datos de lectura.</p>
-      <div class="flex space-x-2 pt-2">
-        <button id="btn-cancel-confirm" class="flex-1 px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-xl transition">Cancelar</button>
-        <button id="btn-action-confirm" class="flex-1 px-4 py-2 text-xs font-medium text-white bg-rose-600 hover:bg-rose-700 rounded-xl shadow-md transition">Aceptar</button>
-      </div>
-    </div>
-  </div>
+        // Pre-loaded original list of 24 students
+        const INITIAL_STUDENTS = [
+            { id: "s1", name: "Beckford Parra, Mateo", books: 0 },
+            { id: "s2", name: "Beltrán Jiménez, Elba", books: 0 },
+            { id: "s3", name: "Cáceres Pesántez, Mía", books: 0 },
+            { id: "s4", name: "Díaz Martínez, María", books: 0 },
+            { id: "s5", name: "Esteban Garrido, Antonio", books: 0 },
+            { id: "s6", name: "Expósito Vena, Ángela", books: 0 },
+            { id: "s7", name: "Gallego de Francisco, Fabio", books: 0 },
+            { id: "s8", name: "Hidalgo Torres, Diego", books: 0 },
+            { id: "s9", name: "Higueras Fernández, Leo", books: 0 },
+            { id: "s10", name: "Jiménez Cordero, Ángel", books: 0 },
+            { id: "s11", name: "Jiménez Montoro, Álvaro", books: 0 },
+            { id: "s12", name: "Lendínez Valderas, Malena", books: 0 },
+            { id: "s13", name: "Martínez Rodríguez, Luis", books: 0 },
+            { id: "s14", name: "Mengíbar Calero, Lucas", books: 0 },
+            { id: "s15", name: "Mesa Lijarcio, Álvaro", books: 0 },
+            { id: "s16", name: "Mesa Montoro, Fátima", books: 0 },
+            { id: "s17", name: "Molina Porras, Paula", books: 0 },
+            { id: "s18", name: "Molina Vílchez, Daniela", books: 0 },
+            { id: "s19", name: "Rentero López, Laura", books: 0 },
+            { id: "s20", name: "Romero Romera, Mario", books: 0 },
+            { id: "s21", name: "Sánchez Ortigoso, Hugo", books: 0 },
+            { id: "s22", name: "Serrano Rojas, Paula", books: 0 },
+            { id: "s23", name: "Torres Montes, José Carlos", books: 0 },
+            { id: "s24", name: "Zoca Hidalgo, Julieta", books: 0 }
+        ];
 
-  <!-- Toast Notification element -->
-  <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 text-white text-xs font-medium px-4 py-3 rounded-xl shadow-2xl z-50 transform translate-y-20 opacity-0 transition-all duration-300 flex items-center gap-2">
-    <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400 text-sm"></i>
-    <span id="toast-message">Mensaje</span>
-  </div>
+        // State variables
+        let students = [];
+        let roomCode = "";
+        let db = null;
+        let auth = null;
+        let unsubRoom = null;
+        let histogramChart = null;
+        let isSyncingFromCloud = false;
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        const LOCAL_STORAGE_KEY = "lecturometro_alumnos_data_v2";
+        const ROOM_STORAGE_KEY = "lecturometro_room_code_v2";
 
-    // EXACT PRE-POPULATED 24 STUDENTS LIST
-    const DEFAULT_STUDENT_NAMES = [
-      "Beckford Parra, Mateo",
-      "Beltrán Jiménez, Elba",
-      "Cáceres Pesántez, Mía",
-      "Díaz Martínez, María",
-      "Esteban Garrido, Antonio",
-      "Expósito Vena, Ángela",
-      "Gallego de Francisco, Fabio",
-      "Hidalgo Torres, Diego",
-      "Higueras Fernández, Leo",
-      "Jiménez Cordero, Ángel",
-      "Jiménez Montoro, Álvaro",
-      "Lendínez Valderas, Malena",
-      "Martínez Rodríguez, Luis",
-      "Mengíbar Calero, Lucas",
-      "Mesa Lijarcio, Álvaro",
-      "Mesa Montoro, Fátima",
-      "Molina Porras, Paula",
-      "Molina Vílchez, Daniela",
-      "Rentero López, Laura",
-      "Romero Romera, Mario",
-      "Sánchez Ortigoso, Hugo",
-      "Serrano Rojas, Paula",
-      "Torres Montes, José Carlos",
-      "Zoca Hidalgo, Julieta"
-    ];
-
-    // Palette of vibrant colors for the 24 students
-    const STUDENT_COLORS = [
-      '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4',
-      '#f97316', '#6366f1', '#84cc16', '#14b8a6', '#d946ef', '#eab308',
-      '#2563eb', '#059669', '#d97706', '#7c3aed', '#db2777', '#0891b2',
-      '#ea580c', '#4f46e5', '#65a30d', '#0d9488', '#c026d3', '#ca8a04'
-    ];
-
-    // Generate initial structure
-    function generateInitialStudents() {
-      return DEFAULT_STUDENT_NAMES.map((name, index) => ({
-        id: index + 1,
-        name: name,
-        books: 0,
-        color: STUDENT_COLORS[index % STUDENT_COLORS.length]
-      }));
-    }
-
-    // App State
-    let appState = {
-      students: generateInitialStudents(),
-      targetGoal: 200,
-      lastUpdated: Date.now()
-    };
-
-    let currentUser = null;
-    let chartInstance = null;
-    let isHorizontalChart = false;
-    let activeFilter = '';
-    let activeSort = 'id-asc';
-
-    // Environment variables
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'lectura-clase-24-app';
-    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-      apiKey: "demo-key",
-      authDomain: "demo-app.firebaseapp.com",
-      projectId: "demo-app",
-      storageBucket: "demo-app.appspot.com",
-      messagingSenderId: "123456789",
-      appId: "1:123456789:web:demo"
-    };
-    const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    // Document Path adhering to RULE 1: /artifacts/{appId}/public/data/{collectionName}/{docId}
-    const classDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'reading_tracker', 'class_24');
-
-    function showToast(message, type = 'success') {
-      const toast = document.getElementById('toast');
-      const toastText = document.getElementById('toast-message');
-      const toastIcon = document.getElementById('toast-icon');
-
-      toastText.textContent = message;
-      if (type === 'error') {
-        toastIcon.className = "fa-solid fa-circle-xmark text-rose-400 text-sm";
-      } else if (type === 'info') {
-        toastIcon.className = "fa-solid fa-circle-info text-sky-400 text-sm";
-      } else {
-        toastIcon.className = "fa-solid fa-circle-check text-emerald-400 text-sm";
-      }
-
-      toast.classList.remove('translate-y-20', 'opacity-0');
-      toast.classList.add('translate-y-0', 'opacity-100');
-
-      setTimeout(() => {
-        toast.classList.remove('translate-y-0', 'opacity-100');
-        toast.classList.add('translate-y-20', 'opacity-0');
-      }, 3000);
-    }
-
-    function updateSyncBadge(status) {
-      const badge = document.getElementById('sync-status');
-
-      if (status === 'synced') {
-        badge.className = "flex items-center space-x-1.5 text-xs font-medium px-2.5 py-1.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 transition-all";
-        badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span><span class="hidden md:inline">Sincronizado en tiempo real</span>`;
-      } else if (status === 'saving') {
-        badge.className = "flex items-center space-x-1.5 text-xs font-medium px-2.5 py-1.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 transition-all";
-        badge.innerHTML = `<i class="fa-solid fa-spinner animate-spin text-xs"></i><span class="hidden md:inline">Guardando...</span>`;
-      } else if (status === 'error') {
-        badge.className = "flex items-center space-x-1.5 text-xs font-medium px-2.5 py-1.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 transition-all";
-        badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-rose-500"></span><span class="hidden md:inline">Error de red</span>`;
-      } else {
-        badge.className = "flex items-center space-x-1.5 text-xs font-medium px-2.5 py-1.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 transition-all";
-        badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span><span class="hidden md:inline">Conectando...</span>`;
-      }
-    }
-
-    async function saveStateToFirebase() {
-      if (!currentUser) return;
-      try {
-        updateSyncBadge('saving');
-        appState.lastUpdated = Date.now();
-        await setDoc(classDocRef, appState, { merge: true });
-        updateSyncBadge('synced');
-      } catch (error) {
-        console.error("Error al guardar en Firebase:", error);
-        updateSyncBadge('error');
-      }
-    }
-
-    async function startApp() {
-      try {
-        if (initialAuthToken) {
-          await signInWithCustomToken(auth, initialAuthToken);
-        } else {
-          await signInAnonymously(auth);
-        }
-      } catch (err) {
-        await signInAnonymously(auth);
-      }
-
-      onAuthStateChanged(auth, (user) => {
-        if (user) {
-          currentUser = user;
-          onSnapshot(classDocRef, (docSnap) => {
-            if (docSnap.exists()) {
-              const data = docSnap.data();
-              if (data.students && Array.isArray(data.students) && data.students.length === 24) {
-                appState.students = data.students.map((st, idx) => ({
-                  id: st.id || (idx + 1),
-                  name: st.name || DEFAULT_STUDENT_NAMES[idx],
-                  books: typeof st.books === 'number' ? st.books : 0,
-                  color: st.color || STUDENT_COLORS[idx % STUDENT_COLORS.length]
-                }));
-              } else if (!data.students) {
-                appState.students = generateInitialStudents();
-                saveStateToFirebase();
-              }
-              if (data.targetGoal) {
-                appState.targetGoal = data.targetGoal;
-                document.getElementById('goal-selector').value = data.targetGoal;
-              }
-            } else {
-              saveStateToFirebase();
-            }
-            updateSyncBadge('synced');
+        window.addEventListener("DOMContentLoaded", async () => {
+            loadLocalData();
+            initChart();
+            setupEventListeners();
             renderAll();
-          }, (error) => {
-            console.error("Error Snapshot:", error);
-            updateSyncBadge('error');
-          });
-        }
-      });
-    }
 
-    function calculateStats() {
-      const students = appState.students;
-      const totalBooks = students.reduce((sum, s) => sum + (s.books || 0), 0);
-      const avgBooks = students.length > 0 ? (totalBooks / students.length).toFixed(1) : '0.0';
+            // Check if Firebase is available in environment
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'lecturometro-app';
+            if (typeof __firebase_config !== 'undefined') {
+                try {
+                    const firebaseConfig = JSON.parse(__firebase_config);
+                    const app = initializeApp(firebaseConfig);
+                    auth = getAuth(app);
+                    db = getFirestore(app);
 
-      let maxBooks = -1;
-      let topReaders = [];
-      students.forEach(s => {
-        if (s.books > maxBooks && s.books > 0) {
-          maxBooks = s.books;
-          topReaders = [s.name];
-        } else if (s.books === maxBooks && maxBooks > 0) {
-          topReaders.push(s.name);
-        }
-      });
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
 
-      return { totalBooks, avgBooks, maxBooks: maxBooks > 0 ? maxBooks : 0, topReaders };
-    }
-
-    function renderStats() {
-      const stats = calculateStats();
-
-      document.getElementById('stat-total-books').textContent = stats.totalBooks;
-      document.getElementById('stat-avg-books').textContent = stats.avgBooks;
-
-      const topReaderElem = document.getElementById('stat-top-reader');
-      const topCountElem = document.getElementById('stat-top-count');
-
-      if (stats.topReaders.length === 0) {
-        topReaderElem.textContent = "Aún sin lecturas";
-        topCountElem.textContent = "0 libros leídos";
-      } else if (stats.topReaders.length === 1) {
-        topReaderElem.textContent = stats.topReaders[0];
-        topCountElem.textContent = `${stats.maxBooks} libros leídos`;
-      } else {
-        topReaderElem.textContent = `${stats.topReaders[0]} (+${stats.topReaders.length - 1})`;
-        topCountElem.textContent = `Empate: ${stats.maxBooks} libros`;
-      }
-
-      const goal = appState.targetGoal || 200;
-      const percent = Math.min(100, Math.round((stats.totalBooks / goal) * 100));
-      document.getElementById('goal-percent-text').textContent = `${percent}%`;
-      document.getElementById('goal-fraction-text').textContent = `${stats.totalBooks} / ${goal}`;
-      document.getElementById('goal-bar').style.width = `${percent}%`;
-    }
-
-    function getFilteredAndSortedStudents() {
-      let list = [...appState.students];
-
-      if (activeFilter.trim() !== '') {
-        const query = activeFilter.toLowerCase();
-        list = list.filter(s => s.name.toLowerCase().includes(query) || s.id.toString() === query);
-      }
-
-      if (activeSort === 'id-asc') {
-        list.sort((a, b) => a.id - b.id);
-      } else if (activeSort === 'books-desc') {
-        list.sort((a, b) => b.books - a.books || a.id - b.id);
-      } else if (activeSort === 'books-asc') {
-        list.sort((a, b) => a.books - b.books || a.id - b.id);
-      } else if (activeSort === 'name-asc') {
-        list.sort((a, b) => a.name.localeCompare(b.name, 'es'));
-      }
-
-      return list;
-    }
-
-    function renderHistogramChart() {
-      const canvas = document.getElementById('histogramChart');
-      if (!canvas) return;
-      const ctx = canvas.getContext('2d');
-      const students = getFilteredAndSortedStudents();
-
-      const labels = students.map(s => {
-        // Shorten long names for chart labels if necessary
-        const parts = s.name.split(',');
-        if (parts.length === 2) {
-          const apellidos = parts[0].trim().split(' ')[0]; // First surname
-          const nombre = parts[1].trim();
-          return `${nombre} ${apellidos.charAt(0)}.`;
-        }
-        return s.name;
-      });
-      
-      const data = students.map(s => s.books);
-      const colors = students.map(s => s.color || '#3b82f6');
-
-      if (chartInstance) {
-        chartInstance.destroy();
-      }
-
-      chartInstance = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: labels,
-          datasets: [{
-            label: 'Libros Leídos',
-            data: data,
-            backgroundColor: colors.map(c => c + 'D9'),
-            borderColor: colors,
-            borderWidth: 1.5,
-            borderRadius: 6,
-            borderSkipped: false,
-          }]
-        },
-        options: {
-          indexAxis: isHorizontalChart ? 'y' : 'x',
-          responsive: true,
-          maintainAspectRatio: false,
-          animation: {
-            duration: 300,
-          },
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              backgroundColor: '#0f172a',
-              titleFont: { family: 'Fredoka', size: 14 },
-              bodyFont: { family: 'Inter', size: 13 },
-              padding: 12,
-              cornerRadius: 10,
-              callbacks: {
-                title: function(context) {
-                  const idx = context[0].dataIndex;
-                  return students[idx].name;
-                },
-                label: function(context) {
-                  const val = context.raw;
-                  return ` 📚 ${val} ${val === 1 ? 'libro leídos' : 'libros leídos'}`;
+                    // Restore saved room code if present
+                    const savedRoom = localStorage.getItem(ROOM_STORAGE_KEY);
+                    if (savedRoom) {
+                        document.getElementById("input-room-code").value = savedRoom;
+                        connectToRoom(savedRoom);
+                    }
+                } catch (err) {
+                    console.warn("Firebase initialization skipped or failed:", err);
                 }
-              }
             }
-          },
-          scales: {
-            x: {
-              grid: { display: false },
-              ticks: {
-                font: { family: 'Inter', size: 10 },
-                color: '#64748b',
-                maxRotation: isHorizontalChart ? 0 : 60,
-                minRotation: isHorizontalChart ? 0 : 0
-              }
-            },
-            y: {
-              beginAtZero: true,
-              grid: { color: '#f1f5f9' },
-              ticks: {
-                precision: 0,
-                font: { family: 'Inter', size: 11 },
-                color: '#64748b'
-              }
+        });
+
+        // Load data from LocalStorage
+        function loadLocalData() {
+            const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+            if (raw) {
+                try {
+                    students = JSON.parse(raw);
+                } catch (e) {
+                    students = JSON.parse(JSON.stringify(INITIAL_STUDENTS));
+                }
+            } else {
+                students = JSON.parse(JSON.stringify(INITIAL_STUDENTS));
+                saveLocalData();
             }
-          }
-        }
-      });
-    }
-
-    function renderGrid() {
-      const grid = document.getElementById('students-grid');
-      const students = getFilteredAndSortedStudents();
-      document.getElementById('grid-count').textContent = students.length;
-
-      if (students.length === 0) {
-        grid.innerHTML = `
-          <div class="col-span-full py-12 text-center text-slate-400">
-            <i class="fa-solid fa-user-slash text-3xl mb-2"></i>
-            <p class="text-sm">No hay alumnos que coincidan con "${activeFilter}"</p>
-          </div>
-        `;
-        return;
-      }
-
-      grid.innerHTML = students.map(student => {
-        return `
-          <div class="student-card bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-3 relative overflow-hidden">
-            <div class="absolute top-0 left-0 right-0 h-1.5" style="background-color: ${student.color}"></div>
-
-            <div class="flex items-center justify-between pt-1">
-              <div class="flex items-center space-x-2.5 min-w-0">
-                <div class="w-8 h-8 rounded-full flex items-center justify-center font-display font-bold text-xs text-white shrink-0 shadow-xs" style="background-color: ${student.color}">
-                  ${student.id}
-                </div>
-                <div class="min-w-0">
-                  <h3 class="font-display font-bold text-xs sm:text-sm text-slate-800 truncate cursor-pointer hover:text-blue-600 transition flex items-center gap-1.5" onclick="window.openEditModal(${student.id})">
-                    <span class="truncate" title="${student.name}">${student.name}</span>
-                    <i class="fa-solid fa-pen text-[10px] text-slate-300 hover:text-blue-500"></i>
-                  </h3>
-                </div>
-              </div>
-            </div>
-
-            <!-- Big Number Display -->
-            <div class="bg-slate-50 rounded-xl p-2.5 border border-slate-100 flex items-center justify-between">
-              <span class="text-xs font-semibold text-slate-400 uppercase">Leídos:</span>
-              <div class="flex items-baseline space-x-1">
-                <span class="text-2xl font-display font-extrabold text-slate-800">${student.books}</span>
-                <span class="text-xs text-slate-400">libros</span>
-              </div>
-            </div>
-
-            <!-- Fast Counter Buttons -->
-            <div class="grid grid-cols-4 gap-1.5 pt-0.5">
-              <button onclick="window.changeBooks(${student.id}, -1)" class="bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold py-1.5 rounded-lg text-sm transition active:scale-95 flex items-center justify-center" title="Restar 1">
-                -1
-              </button>
-              <button onclick="window.changeBooks(${student.id}, 1)" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold py-1.5 rounded-lg text-xs sm:text-sm transition active:scale-95 flex items-center justify-center col-span-2" title="Sumar 1">
-                +1 Libro
-              </button>
-              <button onclick="window.changeBooks(${student.id}, 5)" class="bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold py-1.5 rounded-lg text-xs transition active:scale-95 flex items-center justify-center" title="Sumar 5">
-                +5
-              </button>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    function renderLeaderboard() {
-      const sorted = [...appState.students].sort((a, b) => b.books - a.books || a.id - b.id);
-      const podiumContainer = document.getElementById('podium-container');
-      const leaderboardBody = document.getElementById('leaderboard-body');
-
-      const first = sorted[0];
-      const second = sorted[1];
-      const third = sorted[2];
-
-      podiumContainer.innerHTML = `
-        <!-- 2nd Place -->
-        <div class="flex flex-col items-center">
-          <div class="w-12 h-12 rounded-full border-2 border-slate-300 bg-slate-100 flex items-center justify-center font-display font-bold text-slate-700 shadow-sm mb-1.5 relative">
-            <span class="absolute -top-2 bg-slate-300 text-slate-800 text-[10px] font-bold px-1.5 rounded-full">2º</span>
-            <span class="text-[10px] truncate max-w-[40px]">${second ? second.name.split(',')[0] : ''}</span>
-          </div>
-          <p class="text-xs font-bold text-slate-800 truncate max-w-[80px] text-center">${second ? second.name.split(' ')[0] : '-'}</p>
-          <span class="text-[11px] font-semibold text-slate-500">${second ? second.books : 0} libros</span>
-          <div class="w-full bg-slate-200 h-20 rounded-t-xl mt-2 flex items-center justify-center text-slate-400 font-bold text-lg">2</div>
-        </div>
-
-        <!-- 1st Place -->
-        <div class="flex flex-col items-center">
-          <div class="w-16 h-16 rounded-full border-4 border-amber-400 bg-amber-50 flex items-center justify-center font-display font-bold text-amber-700 shadow-md mb-1.5 relative">
-            <i class="fa-solid fa-crown text-amber-500 absolute -top-4 text-base"></i>
-            <span class="absolute -top-2 bg-amber-400 text-amber-900 text-[10px] font-bold px-2 rounded-full">1º</span>
-            <span class="text-xs truncate max-w-[50px]">${first ? first.name.split(',')[0] : ''}</span>
-          </div>
-          <p class="text-xs font-bold text-slate-800 truncate max-w-[100px] text-center">${first ? first.name.split(' ')[0] : '-'}</p>
-          <span class="text-xs font-extrabold text-amber-600">${first ? first.books : 0} libros</span>
-          <div class="w-full bg-gradient-to-t from-amber-400 to-amber-300 h-28 rounded-t-xl mt-2 flex items-center justify-center text-amber-900 font-bold text-2xl shadow-md">1</div>
-        </div>
-
-        <!-- 3rd Place -->
-        <div class="flex flex-col items-center">
-          <div class="w-12 h-12 rounded-full border-2 border-amber-700 bg-amber-900/10 flex items-center justify-center font-display font-bold text-amber-800 shadow-sm mb-1.5 relative">
-            <span class="absolute -top-2 bg-amber-700 text-white text-[10px] font-bold px-1.5 rounded-full">3º</span>
-            <span class="text-[10px] truncate max-w-[40px]">${third ? third.name.split(',')[0] : ''}</span>
-          </div>
-          <p class="text-xs font-bold text-slate-800 truncate max-w-[80px] text-center">${third ? third.name.split(' ')[0] : '-'}</p>
-          <span class="text-[11px] font-semibold text-slate-500">${third ? third.books : 0} libros</span>
-          <div class="w-full bg-amber-100 h-16 rounded-t-xl mt-2 flex items-center justify-center text-amber-800 font-bold text-lg">3</div>
-        </div>
-      `;
-
-      leaderboardBody.innerHTML = sorted.map((student, idx) => {
-        let badge = '<span class="text-xs text-slate-400">Lector Promesa</span>';
-        if (student.books >= 20) {
-          badge = '<span class="inline-flex items-center gap-1 bg-purple-100 text-purple-800 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-purple-200">💎 Super Lector</span>';
-        } else if (student.books >= 10) {
-          badge = '<span class="inline-flex items-center gap-1 bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-amber-200">🥇 Lector Oro</span>';
-        } else if (student.books >= 5) {
-          badge = '<span class="inline-flex items-center gap-1 bg-slate-200 text-slate-800 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-slate-300">🥈 Lector Plata</span>';
-        } else if (student.books >= 1) {
-          badge = '<span class="inline-flex items-center gap-1 bg-amber-900/10 text-amber-900 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-amber-900/20">🥉 Lector Bronce</span>';
         }
 
-        const rankDisplay = idx === 0 ? '🥇 1' : idx === 1 ? '🥈 2' : idx === 2 ? '🥉 3' : `${idx + 1}`;
-
-        return `
-          <tr class="hover:bg-slate-50 transition">
-            <td class="px-4 py-3 text-center font-bold text-slate-600 text-xs">${rankDisplay}</td>
-            <td class="px-4 py-3 font-semibold text-slate-800 flex items-center gap-2">
-              <span class="w-3 h-3 rounded-full shrink-0" style="background-color: ${student.color}"></span>
-              <span>${student.name}</span>
-            </td>
-            <td class="px-4 py-3 text-center font-display font-bold text-slate-800">${student.books}</td>
-            <td class="px-4 py-3">${badge}</td>
-          </tr>
-        `;
-      }).join('');
-    }
-
-    function renderAll() {
-      renderStats();
-      renderHistogramChart();
-      renderGrid();
-      renderLeaderboard();
-    }
-
-    // Global helper handlers
-    window.changeBooks = function(id, delta) {
-      const student = appState.students.find(s => s.id === id);
-      if (student) {
-        const newCount = Math.max(0, (student.books || 0) + delta);
-        if (student.books !== newCount) {
-          student.books = newCount;
-          renderAll();
-          saveStateToFirebase();
+        // Save data to LocalStorage
+        function saveLocalData() {
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(students));
+            showToast("Guardado en este dispositivo", "success");
+            
+            // Push to cloud if connected
+            if (db && roomCode && !isSyncingFromCloud) {
+                syncToCloud();
+            }
         }
-      }
-    };
 
-    window.openEditModal = function(id) {
-      const student = appState.students.find(s => s.id === id);
-      if (student) {
-        document.getElementById('edit-student-id').value = student.id;
-        document.getElementById('edit-student-input-name').value = student.name;
-        document.getElementById('edit-student-input-books').value = student.books;
-        document.getElementById('modal-edit-student').classList.remove('hidden');
-      }
-    };
-
-    function closeModals() {
-      document.querySelectorAll('.fixed.z-50').forEach(m => m.classList.add('hidden'));
-      document.getElementById('export-dropdown').classList.add('hidden');
-    }
-
-    document.querySelectorAll('.btn-close-modal').forEach(btn => {
-      btn.addEventListener('click', closeModals);
-    });
-
-    // Save individual student edit
-    document.getElementById('btn-save-student').addEventListener('click', () => {
-      const id = parseInt(document.getElementById('edit-student-id').value, 10);
-      const name = document.getElementById('edit-student-input-name').value.trim();
-      const books = parseInt(document.getElementById('edit-student-input-books').value, 10);
-
-      const student = appState.students.find(s => s.id === id);
-      if (student) {
-        if (name) student.name = name;
-        if (!isNaN(books) && books >= 0) student.books = books;
-
-        closeModals();
-        renderAll();
-        saveStateToFirebase();
-        showToast("Datos de alumno actualizados");
-      }
-    });
-
-    // Batch Names Modal
-    document.getElementById('btn-batch-modal').addEventListener('click', () => {
-      const names = appState.students.map(s => s.name).join('\n');
-      document.getElementById('batch-names-textarea').value = names;
-      document.getElementById('modal-batch-names').classList.remove('hidden');
-    });
-
-    document.getElementById('btn-default-names').addEventListener('click', () => {
-      document.getElementById('batch-names-textarea').value = DEFAULT_STUDENT_NAMES.join('\n');
-    });
-
-    document.getElementById('btn-save-batch-names').addEventListener('click', () => {
-      const lines = document.getElementById('batch-names-textarea').value.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-      
-      for (let i = 0; i < 24; i++) {
-        if (lines[i]) {
-          appState.students[i].name = lines[i];
-        } else {
-          appState.students[i].name = `Alumno ${i + 1}`;
+        // Push data to Firebase Firestore
+        async function syncToCloud() {
+            if (!db || !roomCode) return;
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'lecturometro-app';
+            const roomDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'classrooms', roomCode);
+            try {
+                await setDoc(roomDocRef, {
+                    students: students,
+                    updatedAt: new Date().toISOString()
+                }, { merge: true });
+                updateCloudStatusUI(true, `Sincronizado en la nube (Sala: ${roomCode})`);
+            } catch (err) {
+                console.error("Error saving to cloud:", err);
+                updateCloudStatusUI(false, "Error de sincronización cloud");
+            }
         }
-      }
 
-      closeModals();
-      renderAll();
-      saveStateToFirebase();
-      showToast("Lista de 24 alumnos guardada");
-    });
+        // Connect to Cloud Room Code
+        function connectToRoom(code) {
+            if (!code || !db) return;
+            roomCode = code.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
+            if (!roomCode) return;
 
-    document.getElementById('btn-export-menu').addEventListener('click', (e) => {
-      e.stopPropagation();
-      document.getElementById('export-dropdown').classList.toggle('hidden');
-    });
+            localStorage.setItem(ROOM_STORAGE_KEY, roomCode);
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'lecturometro-app';
+            const roomDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'classrooms', roomCode);
 
-    document.addEventListener('click', () => {
-      document.getElementById('export-dropdown').classList.add('hidden');
-    });
+            if (unsubRoom) unsubRoom();
 
-    // Export JSON Backup
-    document.getElementById('btn-export-json').addEventListener('click', () => {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState, null, 2));
-      const downloadAnchor = document.createElement('a');
-      downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `lectura_clase_24_${new Date().toISOString().slice(0,10)}.json`);
-      document.body.appendChild(downloadAnchor);
-      downloadAnchor.click();
-      downloadAnchor.remove();
-      showToast("Copia de seguridad exportada (JSON)");
-    });
+            updateCloudStatusUI(true, `Conectando a la sala ${roomCode}...`);
 
-    // Export CSV Table
-    document.getElementById('btn-export-csv').addEventListener('click', () => {
-      let csvContent = "data:text/csv;charset=utf-8,\uFEFFID;Nombre;Libros Leidos\n";
-      appState.students.forEach(s => {
-        csvContent += `${s.id};"${s.name.replace(/"/g, '""')}";${s.books}\n`;
-      });
-      const encodedUri = encodeURI(csvContent);
-      const link = document.createElement('a');
-      link.setAttribute('href', encodedUri);
-      link.setAttribute('download', `registro_lectura_clase_${new Date().toISOString().slice(0,10)}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      showToast("Tabla de lectura exportada (CSV)");
-    });
+            unsubRoom = onSnapshot(roomDocRef, (snapshot) => {
+                if (snapshot.exists()) {
+                    const data = snapshot.data();
+                    if (data && Array.isArray(data.students)) {
+                        isSyncingFromCloud = true;
+                        students = data.students;
+                        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(students));
+                        renderAll();
+                        isSyncingFromCloud = false;
+                        showToast(`Datos actualizados desde nube (${roomCode})`, "info");
+                    }
+                } else {
+                    // First time creating this room -> push local data
+                    syncToCloud();
+                }
+                updateCloudStatusUI(true, `Nube activa: ${roomCode}`);
+            }, (error) => {
+                console.error("Firestore snapshot error:", error);
+                updateCloudStatusUI(false, "Error al escuchar cambios en la nube");
+            });
 
-    // Import Open Modal
-    document.getElementById('btn-import-open').addEventListener('click', () => {
-      document.getElementById('modal-import').classList.remove('hidden');
-    });
-
-    document.getElementById('btn-confirm-import').addEventListener('click', () => {
-      const fileInput = document.getElementById('import-file-input');
-      const file = fileInput.files[0];
-      if (!file) {
-        showToast("Selecciona un archivo JSON", "error");
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const imported = JSON.parse(e.target.result);
-          if (imported.students && Array.isArray(imported.students)) {
-            appState.students = imported.students;
-            if (imported.targetGoal) appState.targetGoal = imported.targetGoal;
-            closeModals();
-            renderAll();
-            saveStateToFirebase();
-            showToast("Datos importados con éxito");
-          } else {
-            showToast("Formato de archivo inválido", "error");
-          }
-        } catch (err) {
-          showToast("Error al leer el archivo JSON", "error");
+            document.getElementById("btn-disconnect-cloud").classList.remove("hidden");
         }
-      };
-      reader.readAsText(file);
-    });
 
-    let activeConfirmAction = null;
-
-    function openConfirmModal(title, message, action) {
-      document.getElementById('confirm-title').textContent = title;
-      document.getElementById('confirm-message').textContent = message;
-      activeConfirmAction = action;
-      document.getElementById('modal-confirm').classList.remove('hidden');
-    }
-
-    document.getElementById('btn-cancel-confirm').addEventListener('click', closeModals);
-    document.getElementById('btn-action-confirm').addEventListener('click', () => {
-      if (activeConfirmAction) activeConfirmAction();
-      closeModals();
-    });
-
-    document.getElementById('btn-reset-modal').addEventListener('click', () => {
-      openConfirmModal(
-        "¿Reiniciar contadores?",
-        "¿Estás seguro de que deseas poner a cero la cantidad de libros de los 24 alumnos?",
-        () => {
-          appState.students.forEach(s => s.books = 0);
-          renderAll();
-          saveStateToFirebase();
-          showToast("Contadores a cero");
+        function disconnectCloud() {
+            if (unsubRoom) unsubRoom();
+            roomCode = "";
+            localStorage.removeItem(ROOM_STORAGE_KEY);
+            updateCloudStatusUI(false, "Sincronización Cloud");
+            document.getElementById("btn-disconnect-cloud").classList.add("hidden");
+            document.getElementById("input-room-code").value = "";
+            showToast("Desconectado de la nube. Modo local activo.", "info");
         }
-      );
-    });
 
-    // Tab Navigation
-    const tabHistogram = document.getElementById('tab-histogram');
-    const tabGrid = document.getElementById('tab-grid');
-    const tabLeaderboard = document.getElementById('tab-leaderboard');
+        function updateCloudStatusUI(connected, text) {
+            const btnText = document.getElementById("cloud-status-text");
+            const badgeText = document.getElementById("cloud-connection-status");
+            btnText.textContent = text;
+            if (connected) {
+                badgeText.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-500 text-sm"></i> <span>${text}</span>`;
+            } else {
+                badgeText.innerHTML = `<i class="fa-solid fa-circle-xmark text-amber-500 text-sm"></i> <span>${text}</span>`;
+            }
+        }
 
-    const viewHistogram = document.getElementById('view-histogram');
-    const viewGrid = document.getElementById('view-grid');
-    const viewLeaderboard = document.getElementById('view-leaderboard');
+        function initChart() {
+            const ctx = document.getElementById('histogramChart').getContext('2d');
+            
+            histogramChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Libros Leídos',
+                        data: [],
+                        backgroundColor: (context) => {
+                            const chart = context.chart;
+                            const {ctx, chartArea} = chart;
+                            if (!chartArea) return '#6366f1';
+                            const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+                            gradient.addColorStop(0, '#818cf8');
+                            gradient.addColorStop(1, '#4f46e5');
+                            return gradient;
+                        },
+                        borderRadius: 8,
+                        borderSkipped: false,
+                        hoverBackgroundColor: '#4338ca'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        duration: 400
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => ` ${context.raw} libros leídos`
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: {
+                                font: { family: 'Outfit', size: 10 },
+                                maxRotation: 45,
+                                minRotation: 0
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0,
+                                font: { family: 'Outfit', size: 11 }
+                            },
+                            grid: { color: '#f1f5f9' }
+                        }
+                    }
+                }
+            });
+        }
 
-    function setActiveTab(activeBtn, showView) {
-      [tabHistogram, tabGrid, tabLeaderboard].forEach(btn => {
-        btn.className = "tab-btn px-3.5 py-2 text-xs sm:text-sm font-semibold text-slate-600 hover:text-slate-900 rounded-lg transition-all flex items-center gap-2";
-      });
-      activeBtn.className = "tab-btn active px-3.5 py-2 text-xs sm:text-sm font-semibold rounded-lg transition-all flex items-center gap-2 bg-white text-blue-600 shadow-xs";
+        function updateChart(displayStudents) {
+            if (!histogramChart) return;
+            
+            // Short name for chart label (e.g., "Mateo B.")
+            const labels = displayStudents.map(s => {
+                const parts = s.name.split(',');
+                if (parts.length === 2) {
+                    const apellido = parts[0].trim().split(' ')[0];
+                    const nombre = parts[1].trim();
+                    return `${nombre} ${apellido.charAt(0)}.`;
+                }
+                return s.name;
+            });
 
-      [viewHistogram, viewGrid, viewLeaderboard].forEach(v => v.classList.add('hidden'));
-      showView.classList.remove('hidden');
+            const data = displayStudents.map(s => s.books);
 
-      if (showView === viewHistogram) {
-        setTimeout(renderHistogramChart, 50);
-      }
-    }
+            histogramChart.data.labels = labels;
+            histogramChart.data.datasets[0].data = data;
+            histogramChart.update();
+        }
 
-    tabHistogram.addEventListener('click', () => setActiveTab(tabHistogram, viewHistogram));
-    tabGrid.addEventListener('click', () => setActiveTab(tabGrid, viewGrid));
-    tabLeaderboard.addEventListener('click', () => setActiveTab(tabLeaderboard, viewLeaderboard));
+        function getFilteredAndSortedStudents() {
+            const query = document.getElementById("input-search").value.toLowerCase().trim();
+            const sortMode = document.getElementById("select-sort").value;
 
-    document.getElementById('btn-chart-type').addEventListener('click', () => {
-      isHorizontalChart = !isHorizontalChart;
-      document.getElementById('chart-type-text').textContent = isHorizontalChart ? "Vista Vertical" : "Vista Horizontal";
-      renderHistogramChart();
-    });
+            let list = students.filter(s => s.name.toLowerCase().includes(query));
 
-    document.getElementById('goal-selector').addEventListener('change', (e) => {
-      appState.targetGoal = parseInt(e.target.value, 10);
-      renderStats();
-      saveStateToFirebase();
-    });
+            if (sortMode === "books-desc") {
+                list.sort((a, b) => b.books - a.books || a.name.localeCompare(b.name));
+            } else if (sortMode === "books-asc") {
+                list.sort((a, b) => a.books - b.books || a.name.localeCompare(b.name));
+            } else {
+                // Number / alphabetical
+                list.sort((a, b) => a.name.localeCompare(b.name));
+            }
 
-    document.getElementById('search-input').addEventListener('input', (e) => {
-      activeFilter = e.target.value;
-      renderAll();
-    });
+            return list;
+        }
 
-    document.getElementById('sort-selector').addEventListener('change', (e) => {
-      activeSort = e.target.value;
-      renderAll();
-    });
+        function renderAll() {
+            const displayList = getFilteredAndSortedStudents();
+            renderStudentGrid(displayList);
+            updateChart(displayList);
+            renderStats();
+        }
 
-    // Initialize
-    window.addEventListener('DOMContentLoaded', () => {
-      startApp();
-    });
-  </script>
+        function renderStudentGrid(displayList) {
+            const grid = document.getElementById("student-grid");
+            const counterBadge = document.getElementById("students-counter-badge");
+            counterBadge.textContent = `${displayList.length} de ${students.length} alumnos`;
+
+            if (displayList.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full py-12 text-center text-slate-400">
+                        <i class="fa-solid fa-user-slash text-3xl mb-2"></i>
+                        <p class="text-sm">No se encontraron alumnos con ese criterio.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = displayList.map((st, index) => {
+                // Find top leader status
+                const maxBooks = Math.max(...students.map(s => s.books));
+                const isLeader = maxBooks > 0 && st.books === maxBooks;
+
+                return `
+                    <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-3.5 flex items-center justify-between hover:bg-white hover:shadow-md transition group">
+                        <div class="flex items-center space-x-3 truncate">
+                            <div class="w-10 h-10 rounded-xl ${isLeader ? 'bg-amber-100 text-amber-700' : 'bg-indigo-50 text-indigo-700'} flex items-center justify-center font-bold text-xs shrink-0 relative">
+                                ${getInitials(st.name)}
+                                ${isLeader ? '<i class="fa-solid fa-crown absolute -top-1.5 -right-1.5 text-amber-500 text-xs"></i>' : ''}
+                            </div>
+                            <div class="truncate cursor-pointer" onclick="openEditModal('${st.id}')">
+                                <h4 class="text-xs font-bold text-slate-800 truncate group-hover:text-indigo-600 transition" title="${st.name}">
+                                    ${st.name}
+                                </h4>
+                                <p class="text-[11px] text-slate-400">Haz clic para editar</p>
+                            </div>
+                        </div>
+
+                        <!-- Book Counter Controls -->
+                        <div class="flex items-center space-x-1.5 shrink-0">
+                            <button onclick="changeBooks('${st.id}', -1)" class="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 active:scale-95 transition flex items-center justify-center text-xs shadow-sm">
+                                <i class="fa-solid fa-minus"></i>
+                            </button>
+                            
+                            <input type="number" min="0" value="${st.books}" 
+                                onchange="setBooksDirect('${st.id}', this.value)"
+                                class="w-11 h-8 bg-white border border-slate-200 rounded-lg text-center font-bold text-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            
+                            <button onclick="changeBooks('${st.id}', 1)" class="w-8 h-8 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 active:scale-95 transition flex items-center justify-center text-xs shadow-sm">
+                                <i class="fa-solid fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getInitials(name) {
+            const parts = name.split(',');
+            if (parts.length === 2) {
+                const nombre = parts[1].trim();
+                const apellido = parts[0].trim();
+                return `${nombre.charAt(0)}${apellido.charAt(0)}`.toUpperCase();
+            }
+            return name.substring(0, 2).toUpperCase();
+        }
+
+        function renderStats() {
+            const total = students.reduce((acc, s) => acc + (s.books || 0), 0);
+            const avg = students.length > 0 ? (total / students.length).toFixed(1) : "0.0";
+            const maxBooks = Math.max(...students.map(s => s.books || 0), 0);
+            
+            const leaders = students.filter(s => s.books === maxBooks && maxBooks > 0);
+
+            document.getElementById("stat-total-books").textContent = total;
+            document.getElementById("stat-avg-books").textContent = avg;
+            document.getElementById("stat-total-students").textContent = students.length;
+
+            const leaderNameEl = document.getElementById("stat-leader-name");
+            const leaderCountEl = document.getElementById("stat-leader-count");
+
+            if (leaders.length === 1) {
+                leaderNameEl.textContent = leaders[0].name;
+                leaderCountEl.innerHTML = `<i class="fa-solid fa-star text-amber-500"></i> ${maxBooks} libros leídos`;
+            } else if (leaders.length > 1) {
+                leaderNameEl.textContent = `${leaders.length} Alumnos empatados`;
+                leaderCountEl.innerHTML = `<i class="fa-solid fa-star text-amber-500"></i> ${maxBooks} libros cada uno`;
+            } else {
+                leaderNameEl.textContent = "-";
+                leaderCountEl.innerHTML = `<i class="fa-solid fa-star text-slate-300"></i> 0 libros leídos`;
+            }
+        }
+
+        window.changeBooks = function(id, delta) {
+            const st = students.find(s => s.id === id);
+            if (st) {
+                st.books = Math.max(0, (st.books || 0) + delta);
+                saveLocalData();
+                renderAll();
+            }
+        };
+
+        window.setBooksDirect = function(id, value) {
+            const val = parseInt(value, 10);
+            const st = students.find(s => s.id === id);
+            if (st && !isNaN(val)) {
+                st.books = Math.max(0, val);
+                saveLocalData();
+                renderAll();
+            }
+        };
+
+        window.openEditModal = function(id) {
+            const st = students.find(s => s.id === id);
+            if (!st) return;
+            document.getElementById("edit-student-id").value = st.id;
+            document.getElementById("input-edit-student-name").value = st.name;
+            document.getElementById("input-edit-student-books").value = st.books;
+            document.getElementById("modal-edit-student").classList.remove("hidden");
+        };
+
+        function setupEventListeners() {
+            // Search & Sort listeners
+            document.getElementById("input-search").addEventListener("input", renderAll);
+            document.getElementById("select-sort").addEventListener("change", renderAll);
+
+            // Cloud Sync Modal Triggers
+            document.getElementById("btn-open-cloud").addEventListener("click", () => {
+                document.getElementById("modal-cloud").classList.remove("hidden");
+            });
+
+            document.getElementById("btn-connect-cloud").addEventListener("click", () => {
+                const code = document.getElementById("input-room-code").value;
+                if (code) {
+                    connectToRoom(code);
+                    document.getElementById("modal-cloud").classList.add("hidden");
+                }
+            });
+
+            document.getElementById("btn-disconnect-cloud").addEventListener("click", () => {
+                disconnectCloud();
+                document.getElementById("modal-cloud").classList.add("hidden");
+            });
+
+            document.getElementById("btn-generate-code").addEventListener("click", () => {
+                const randCode = "aula-" + Math.floor(1000 + Math.random() * 9000);
+                document.getElementById("input-room-code").value = randCode;
+            });
+
+            // Add Student Modal Triggers
+            document.getElementById("btn-open-add-modal").addEventListener("click", () => {
+                document.getElementById("input-new-student-name").value = "";
+                document.getElementById("input-new-student-books").value = "0";
+                document.getElementById("modal-add-student").classList.remove("hidden");
+            });
+
+            document.getElementById("btn-save-new-student").addEventListener("click", () => {
+                const name = document.getElementById("input-new-student-name").value.trim();
+                const books = parseInt(document.getElementById("input-new-student-books").value, 10) || 0;
+
+                if (!name) {
+                    showToast("Escribe un nombre válido", "error");
+                    return;
+                }
+
+                const newSt = {
+                    id: "s_" + Date.now(),
+                    name: name,
+                    books: Math.max(0, books)
+                };
+
+                students.push(newSt);
+                saveLocalData();
+                renderAll();
+                document.getElementById("modal-add-student").classList.add("hidden");
+                showToast("Alumno añadido con éxito", "success");
+            });
+
+            // Edit Student Modal Save / Delete
+            document.getElementById("btn-save-edit-student").addEventListener("click", () => {
+                const id = document.getElementById("edit-student-id").value;
+                const name = document.getElementById("input-edit-student-name").value.trim();
+                const books = parseInt(document.getElementById("input-edit-student-books").value, 10) || 0;
+
+                const st = students.find(s => s.id === id);
+                if (st && name) {
+                    st.name = name;
+                    st.books = Math.max(0, books);
+                    saveLocalData();
+                    renderAll();
+                    document.getElementById("modal-edit-student").classList.add("hidden");
+                    showToast("Alumno actualizado", "success");
+                }
+            });
+
+            document.getElementById("btn-delete-student").addEventListener("click", () => {
+                const id = document.getElementById("edit-student-id").value;
+                students = students.filter(s => s.id !== id);
+                saveLocalData();
+                renderAll();
+                document.getElementById("modal-edit-student").classList.add("hidden");
+                showToast("Alumno eliminado", "info");
+            });
+
+            // Reset Data Modal
+            document.getElementById("btn-reset-data").addEventListener("click", () => {
+                document.getElementById("modal-reset").classList.remove("hidden");
+            });
+
+            document.getElementById("btn-confirm-reset").addEventListener("click", () => {
+                students = JSON.parse(JSON.stringify(INITIAL_STUDENTS));
+                saveLocalData();
+                renderAll();
+                document.getElementById("modal-reset").classList.add("hidden");
+                showToast("Datos restablecidos de fábrica", "info");
+            });
+
+            // Close all modals
+            document.querySelectorAll(".btn-close-modal").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    document.querySelectorAll(".fixed").forEach(m => m.classList.add("hidden"));
+                });
+            });
+
+            // Export to CSV
+            document.getElementById("btn-export-csv").addEventListener("click", () => {
+                let csvContent = "data:text/csv;charset=utf-8,Alumno,Libros Leidos\n";
+                students.forEach(s => {
+                    csvContent += `"${s.name}",${s.books}\n`;
+                });
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", `lecturas_clase_${new Date().toISOString().slice(0,10)}.csv`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                showToast("CSV descargado para Excel", "success");
+            });
+
+            // Export to JSON
+            document.getElementById("btn-export-json").addEventListener("click", () => {
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(students, null, 2));
+                const downloadAnchor = document.createElement('a');
+                downloadAnchor.setAttribute("href", dataStr);
+                downloadAnchor.setAttribute("download", `copia_seguridad_lecturas_${new Date().toISOString().slice(0,10)}.json`);
+                document.body.appendChild(downloadAnchor);
+                downloadAnchor.click();
+                downloadAnchor.remove();
+                showToast("Copia de seguridad guardada", "success");
+            });
+
+            // Import from JSON
+            document.getElementById("input-import-json").addEventListener("change", (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const imported = JSON.parse(event.target.result);
+                        if (Array.isArray(imported)) {
+                            students = imported;
+                            saveLocalData();
+                            renderAll();
+                            showToast("Datos importados con éxito", "success");
+                        } else {
+                            showToast("Archivo JSON no válido", "error");
+                        }
+                    } catch (err) {
+                        showToast("Error al leer el archivo JSON", "error");
+                    }
+                };
+                reader.readAsText(file);
+            });
+        }
+
+        // Custom Toast Notifications
+        function showToast(message, type = "info") {
+            const container = document.getElementById("toast-container");
+            const toast = document.createElement("div");
+            
+            let bgClass = "bg-slate-800 text-white";
+            let icon = "fa-circle-info";
+
+            if (type === "success") {
+                bgClass = "bg-emerald-600 text-white";
+                icon = "fa-circle-check";
+            } else if (type === "error") {
+                bgClass = "bg-rose-600 text-white";
+                icon = "fa-circle-exclamation";
+            }
+
+            toast.className = `${bgClass} px-4 py-2.5 rounded-xl shadow-lg text-xs font-semibold flex items-center space-x-2 transition-all duration-300 transform translate-y-2 opacity-0 pointer-events-auto`;
+            toast.innerHTML = `<i class="fa-solid ${icon}"></i><span>${message}</span>`;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.remove("translate-y-2", "opacity-0");
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add("opacity-0", "translate-y-2");
+                setTimeout(() => toast.remove(), 300);
+            }, 2500);
+        }
+    </script>
 </body>
 </html>
