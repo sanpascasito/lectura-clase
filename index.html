@@ -1,1012 +1,1370 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="h-full bg-slate-50">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lecturómetro de la Clase: Registro y Histograma de Lectura</title>
-    
-    <!-- Tailwind CSS CDN -->
+    <title>Lecturómetro de Clase - Registro y Histograma</title>
+
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Font Awesome CDN -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Chart.js CDN for Animated Histogram -->
+
+    <!-- Chart.js for Visual Histogram & Charts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <!-- Custom Fonts -->
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f3ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
 
     <style>
-        body {
-            font-family: 'Outfit', sans-serif;
-            background-color: #f8fafc;
+        /* Custom scrollbars and transition effects */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
         }
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
+        ::-webkit-scrollbar-track {
             background: #f1f5f9;
-            border-radius: 8px;
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
+        ::-webkit-scrollbar-thumb {
             background: #cbd5e1;
-            border-radius: 8px;
+            border-radius: 4px;
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        ::-webkit-scrollbar-thumb:hover {
             background: #94a3b8;
         }
-        .pulse-subtle {
-            animation: pulse-border 2s infinite;
+        .card-shadow {
+            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.02);
         }
-        @keyframes pulse-border {
-            0%, 100% { border-color: rgba(16, 185, 129, 0.4); }
-            50% { border-color: rgba(16, 185, 129, 0.9); }
+        .animate-pop {
+            animation: pop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes pop {
+            0% { transform: scale(0.95); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
         }
     </style>
 </head>
-<body class="text-slate-800 antialiased min-h-screen flex flex-col justify-between">
+<body class="font-sans antialiased h-full text-slate-800 flex flex-col min-h-screen">
 
-    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5">
-            <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+    <!-- Navigation Header -->
+    <header class="bg-indigo-900 text-white shadow-lg sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row items-center justify-between py-3 gap-3">
                 
                 <!-- Logo & Title -->
-                <div class="flex items-center space-x-3 text-center sm:text-left">
-                    <div class="w-12 h-12 bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-200 shrink-0">
-                        <i class="fa-solid fa-book-bookmark text-2xl"></i>
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white text-xl shadow-md">
+                        <i class="fa-solid fa-book-open-reader"></i>
                     </div>
                     <div>
-                        <h1 class="text-xl sm:text-2xl font-bold bg-gradient-to-r from-indigo-700 via-purple-700 to-pink-600 bg-clip-text text-transparent">
-                            Lecturómetro de la Clase
-                        </h1>
-                        <p class="text-xs sm:text-sm text-slate-500 font-medium">Registro y Histograma de Lectura Escolar</p>
+                        <h1 class="text-xl font-bold tracking-tight">Lecturómetro de Clase</h1>
+                        <p class="text-xs text-indigo-200">Registro de lectura y estadísticas en tiempo real</p>
                     </div>
                 </div>
 
-                <!-- Persistence Status & Action Buttons -->
-                <div class="flex flex-wrap items-center justify-center gap-2">
-                    <!-- Local Auto-Save Indicator -->
-                    <div id="local-status-badge" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold">
-                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-                        <i class="fa-solid fa-hard-drive text-emerald-600"></i>
-                        <span>Guardado Local</span>
+                <!-- Room Code & Connection Status Controls -->
+                <div class="flex flex-wrap items-center gap-2 bg-indigo-950/60 p-2 rounded-xl border border-indigo-700/50">
+                    <div class="flex items-center px-2 py-1 bg-indigo-900/80 rounded-lg border border-indigo-700 text-xs">
+                        <i class="fa-solid fa-door-open text-indigo-300 mr-2"></i>
+                        <span class="text-indigo-200 font-medium mr-1">Sala:</span>
+                        <input type="text" id="roomCodeInput" value="aula-2026" 
+                            class="bg-indigo-950 text-amber-300 font-mono font-bold px-2 py-0.5 rounded border border-indigo-600 focus:outline-none focus:border-amber-400 w-28 text-center text-sm"
+                            title="Código de sala compartido">
+                        <button onclick="changeRoomCode()" 
+                            class="ml-2 text-indigo-200 hover:text-white bg-indigo-700 hover:bg-indigo-600 px-2 py-0.5 rounded text-xs transition"
+                            title="Unirse a esta sala">
+                            <i class="fa-solid fa-rotate"></i>
+                        </button>
                     </div>
 
-                    <!-- Cloud Sync Button & Status -->
-                    <button id="btn-open-cloud" class="flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-slate-100 hover:bg-indigo-50 text-slate-700 hover:text-indigo-700 border border-slate-200 hover:border-indigo-300 transition text-xs font-semibold shadow-sm">
-                        <i class="fa-solid fa-cloud text-indigo-500"></i>
-                        <span id="cloud-status-text">Sincronización Cloud</span>
+                    <!-- Sync Status Indicator -->
+                    <div id="syncBadge" class="flex items-center px-3 py-1 rounded-lg text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                        <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping mr-2"></span>
+                        <span id="syncStatusText">Conectando...</span>
+                    </div>
+
+                    <!-- Share Room Button -->
+                    <button onclick="copyRoomLink()" class="px-2.5 py-1 text-xs bg-indigo-800 hover:bg-indigo-700 text-indigo-100 rounded-lg transition flex items-center gap-1.5" title="Copiar código de sala">
+                        <i class="fa-solid fa-share-nodes"></i>
+                        <span class="hidden sm:inline">Compartir</span>
                     </button>
-
-                    <!-- Tools Dropdown / Quick Actions -->
-                    <div class="flex items-center space-x-1 pl-2 border-l border-slate-200">
-                        <button id="btn-export-csv" title="Exportar a CSV / Excel" class="p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition">
-                            <i class="fa-solid fa-file-csv text-emerald-600 text-lg"></i>
-                        </button>
-                        <button id="btn-export-json" title="Copia de Seguridad (JSON)" class="p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition">
-                            <i class="fa-solid fa-download text-indigo-600 text-base"></i>
-                        </button>
-                        <label title="Importar Copia JSON" class="p-2 rounded-xl text-slate-600 hover:bg-slate-100 cursor-pointer transition">
-                            <i class="fa-solid fa-upload text-purple-600 text-base"></i>
-                            <input type="file" id="input-import-json" accept=".json" class="hidden">
-                        </label>
-                        <button id="btn-reset-data" title="Restablecer Datos" class="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition">
-                            <i class="fa-solid fa-rotate-right text-base"></i>
-                        </button>
-                    </div>
                 </div>
+
             </div>
         </div>
     </header>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full space-y-6 flex-grow">
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
-        <!-- Top Summary Metric Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Top Stats Banner -->
+        <section class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <!-- Total Books -->
+            <div class="bg-white p-4 rounded-2xl card-shadow border border-slate-100 flex items-center space-x-4">
+                <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl shrink-0">
+                    <i class="fa-solid fa-books"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Libros</p>
+                    <h3 id="statTotalBooks" class="text-2xl font-extrabold text-slate-900">0</h3>
+                </div>
+            </div>
+
+            <!-- Average Per Student -->
+            <div class="bg-white p-4 rounded-2xl card-shadow border border-slate-100 flex items-center space-x-4">
+                <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shrink-0">
+                    <i class="fa-solid fa-calculator"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Promedio / Alumno</p>
+                    <h3 id="statAverageBooks" class="text-2xl font-extrabold text-slate-900">0.0</h3>
+                </div>
+            </div>
+
+            <!-- Top Reader -->
+            <div class="bg-white p-4 rounded-2xl card-shadow border border-slate-100 flex items-center space-x-4">
+                <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl shrink-0">
+                    <i class="fa-solid fa-crown"></i>
+                </div>
+                <div class="overflow-hidden">
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Máximo Lector</p>
+                    <h3 id="statTopReader" class="text-sm font-bold text-slate-900 truncate" title="Nadie aún">Ninguno</h3>
+                    <p id="statTopReaderCount" class="text-xs font-medium text-amber-600">0 libros</p>
+                </div>
+            </div>
+
+            <!-- Total Students -->
+            <div class="bg-white p-4 rounded-2xl card-shadow border border-slate-100 flex items-center space-x-4">
+                <div class="w-12 h-12 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center text-xl shrink-0">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Alumnos</p>
+                    <h3 id="statTotalStudents" class="text-2xl font-extrabold text-slate-900">24</h3>
+                </div>
+            </div>
+        </section>
+
+        <!-- Controls & Navigation Bar -->
+        <section class="bg-white p-4 rounded-2xl card-shadow border border-slate-100 space-y-4">
             
-            <!-- Card 1: Total Books -->
-            <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm hover:shadow-md transition">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Leídos</p>
-                        <h3 id="stat-total-books" class="text-3xl font-extrabold text-indigo-900 mt-1">0</h3>
-                    </div>
-                    <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl">
-                        <i class="fa-solid fa-book-open"></i>
-                    </div>
+            <!-- View Mode Tabs -->
+            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
+                <div class="flex items-center space-x-2 bg-slate-100 p-1 rounded-xl">
+                    <button id="tabBtnList" onclick="switchTab('list')" 
+                        class="px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 bg-white text-indigo-600 shadow-sm">
+                        <i class="fa-solid fa-list-ol"></i>
+                        <span>Lista de Alumnos</span>
+                    </button>
+                    <button id="tabBtnChart" onclick="switchTab('chart')" 
+                        class="px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 text-slate-600 hover:text-slate-900">
+                        <i class="fa-solid fa-chart-column"></i>
+                        <span>Histograma y Gráficos</span>
+                    </button>
+                    <button id="tabBtnTools" onclick="switchTab('tools')" 
+                        class="px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 text-slate-600 hover:text-slate-900">
+                        <i class="fa-solid fa-file-csv"></i>
+                        <span>Importar / Exportar</span>
+                    </button>
                 </div>
-                <p class="text-xs text-slate-500 mt-3 flex items-center gap-1">
-                    <i class="fa-solid fa-circle-check text-emerald-500"></i> Suma general del grupo
-                </p>
+
+                <!-- Quick Goal Bar -->
+                <div class="flex items-center gap-2 text-xs font-medium text-slate-600 bg-indigo-50/50 px-3 py-1.5 rounded-xl border border-indigo-100">
+                    <i class="fa-solid fa-bullseye text-indigo-600"></i>
+                    <span>Meta de Clase: <strong id="classGoalTarget">100</strong> libros</span>
+                    <div class="w-24 bg-slate-200 h-2 rounded-full overflow-hidden ml-1">
+                        <div id="classGoalProgress" class="bg-indigo-600 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                    <button onclick="promptEditClassGoal()" class="text-slate-400 hover:text-indigo-600 ml-1" title="Editar meta">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                    </button>
+                </div>
             </div>
 
-            <!-- Card 2: Average Per Student -->
-            <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm hover:shadow-md transition">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Promedio / Alumno</p>
-                        <h3 id="stat-avg-books" class="text-3xl font-extrabold text-purple-900 mt-1">0.0</h3>
+            <!-- Search, Sorting & Display Controls (Visible on List Tab) -->
+            <div id="listControls" class="flex flex-col sm:flex-row items-center justify-between gap-3">
+                <!-- Search Input -->
+                <div class="relative w-full sm:w-72">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                    <input type="text" id="searchInput" oninput="handleSearch()" placeholder="Buscar alumno..."
+                        class="w-full pl-9 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
+                    <button id="clearSearchBtn" onclick="clearSearch()" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                        <i class="fa-solid fa-circle-xmark text-sm"></i>
+                    </button>
+                </div>
+
+                <div class="flex items-center space-x-2 w-full sm:w-auto justify-end">
+                    <!-- Sort Selector -->
+                    <div class="flex items-center space-x-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl text-xs font-medium">
+                        <i class="fa-solid fa-arrow-down-wide-short text-slate-400"></i>
+                        <span class="text-slate-500 hidden sm:inline">Ordenar:</span>
+                        <select id="sortSelect" onchange="handleSortChange()" class="bg-transparent text-slate-800 font-semibold focus:outline-none">
+                            <option value="surname_asc">Apellidos (A - Z)</option>
+                            <option value="surname_desc">Apellidos (Z - A)</option>
+                            <option value="books_desc">Mayor nº de libros</option>
+                            <option value="books_asc">Menor nº de libros</option>
+                        </select>
                     </div>
-                    <div class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-xl">
-                        <i class="fa-solid fa-calculator"></i>
+
+                    <!-- Layout Toggle -->
+                    <div class="flex items-center bg-slate-100 p-1 rounded-xl">
+                        <button id="viewCardsBtn" onclick="setLayoutView('cards')" class="p-1.5 rounded-lg text-xs text-indigo-600 bg-white shadow-sm" title="Vista tarjetas">
+                            <i class="fa-solid fa-grip-vertical"></i>
+                        </button>
+                        <button id="viewTableBtn" onclick="setLayoutView('table')" class="p-1.5 rounded-lg text-xs text-slate-500 hover:text-slate-800" title="Vista tabla">
+                            <i class="fa-solid fa-table-list"></i>
+                        </button>
                     </div>
                 </div>
-                <p class="text-xs text-slate-500 mt-3 flex items-center gap-1">
-                    <i class="fa-solid fa-chart-line text-purple-500"></i> Libros por lector
-                </p>
             </div>
 
-            <!-- Card 3: Top Readers -->
-            <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm hover:shadow-md transition">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Máximo Lector</p>
-                        <h3 id="stat-leader-name" class="text-lg font-bold text-amber-900 mt-1 truncate max-w-[160px] sm:max-w-[180px]">
-                            -
-                        </h3>
-                    </div>
-                    <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl">
-                        <i class="fa-solid fa-trophy"></i>
-                    </div>
+        </section>
+
+        <!-- TAB 1: Student List / Grid View -->
+        <section id="tabContentList" class="space-y-4">
+            <!-- Student Grid Container -->
+            <div id="studentsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                <!-- Dynamically populated student cards -->
+            </div>
+
+            <!-- Student Table Container (Hidden by default) -->
+            <div id="studentsTableContainer" class="hidden bg-white rounded-2xl card-shadow border border-slate-100 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-50 border-b border-slate-100 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                            <tr>
+                                <th class="py-3 px-4">#</th>
+                                <th class="py-3 px-4">Alumno/a</th>
+                                <th class="py-3 px-4 text-center">Nivel</th>
+                                <th class="py-3 px-4 text-center">Libros Leídos</th>
+                                <th class="py-3 px-4 text-center">Ajuste Rápido</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentsTableBody" class="divide-y divide-slate-100">
+                            <!-- Dynamically populated table rows -->
+                        </tbody>
+                    </table>
                 </div>
-                <p id="stat-leader-count" class="text-xs text-amber-700 font-semibold mt-3 flex items-center gap-1">
-                    <i class="fa-solid fa-star text-amber-500"></i> 0 libros leídos
-                </p>
             </div>
 
-            <!-- Card 4: Total Active Students -->
-            <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm hover:shadow-md transition">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Alumnos En Lista</p>
-                        <h3 id="stat-total-students" class="text-3xl font-extrabold text-emerald-900 mt-1">24</h3>
-                    </div>
-                    <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl">
-                        <i class="fa-solid fa-users"></i>
-                    </div>
+            <!-- Empty Search Results Placeholder -->
+            <div id="noResults" class="hidden bg-white p-12 rounded-2xl text-center space-y-3 border border-slate-100">
+                <div class="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto text-2xl">
+                    <i class="fa-solid fa-user-slash"></i>
                 </div>
-                <p class="text-xs text-slate-500 mt-3 flex items-center gap-1">
-                    <i class="fa-solid fa-graduation-cap text-emerald-600"></i> Clase completa pre-cargada
-                </p>
+                <h3 class="text-base font-bold text-slate-700">No se encontraron alumnos</h3>
+                <p class="text-xs text-slate-500">Prueba ajustando el término de búsqueda.</p>
             </div>
-        </div>
+        </section>
 
-        <!-- Toolbar Controls: Search, Sort, Add Student, View Mode -->
-        <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex flex-col md:flex-row items-center justify-between gap-3">
+        <!-- TAB 2: Visual Histogram & Analytics -->
+        <section id="tabContentChart" class="hidden space-y-6">
             
-            <!-- Search Bar -->
-            <div class="relative w-full md:w-80">
-                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-                <input type="text" id="input-search" placeholder="Buscar por nombre de alumno..." 
-                    class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition">
-            </div>
+            <!-- Histogram Controls Header -->
+            <div class="bg-white p-4 rounded-2xl card-shadow border border-slate-100 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-900">Histograma y Análisis de Lectura</h2>
+                    <p class="text-xs text-slate-500">Visualización gráfica de la distribución de lectura en la clase.</p>
+                </div>
 
-            <div class="flex flex-wrap items-center justify-end gap-2 w-full md:w-auto">
-                <!-- Sorting Mode -->
-                <div class="flex items-center space-x-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-600">
-                    <i class="fa-solid fa-arrow-down-wide-short text-slate-400"></i>
-                    <span>Orden:</span>
-                    <select id="select-sort" class="bg-transparent font-semibold text-slate-800 focus:outline-none cursor-pointer">
-                        <option value="number">Nº Lista (Alfabético)</option>
-                        <option value="books-desc">Mayor nº de libros</option>
-                        <option value="books-asc">Menor nº de libros</option>
+                <!-- Palette Selector for Charts -->
+                <div class="flex items-center space-x-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl text-xs">
+                    <i class="fa-solid fa-palette text-indigo-500"></i>
+                    <span class="font-medium text-slate-600">Paleta de color:</span>
+                    <select id="paletteSelect" onchange="renderCharts()" class="bg-transparent font-bold text-slate-800 focus:outline-none">
+                        <option value="indigo">Arcoíris Escolar</option>
+                        <option value="emerald">Bosque Lector</option>
+                        <option value="sunset">Atardecer Cálido</option>
+                        <option value="ocean">Océano Profundo</option>
+                        <option value="neon">Neón Escolar</option>
                     </select>
                 </div>
-
-                <!-- Add Student Button -->
-                <button id="btn-open-add-modal" class="flex items-center space-x-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-medium rounded-xl text-sm shadow-sm transition">
-                    <i class="fa-solid fa-user-plus text-xs"></i>
-                    <span>Añadir Alumno</span>
-                </button>
             </div>
-        </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            
-            <!-- Left / Main: Dynamic Histogram Chart Card -->
-            <div class="lg:col-span-12 bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 sm:p-6 space-y-4">
-                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
-                    <div>
-                        <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-                            <i class="fa-solid fa-chart-column text-indigo-600"></i>
-                            Histograma de Lectura
-                        </h2>
-                        <p class="text-xs text-slate-500">Visualización interactiva del progreso de la clase</p>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Histogram Chart 1: Distribution Ranges -->
+                <div class="bg-white p-5 rounded-2xl card-shadow border border-slate-100 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-chart-simple text-indigo-600"></i>
+                            Histograma de Rangos de Lectura
+                        </h3>
+                        <span class="text-xs text-slate-400">Distribución de alumnos</span>
                     </div>
-
-                    <div class="flex items-center space-x-3 text-xs">
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-indigo-50 text-indigo-700 font-medium">
-                            <span class="w-2.5 h-2.5 rounded-full bg-indigo-500"></span> Barras de Lectura
-                        </span>
+                    <div class="relative h-64 w-full">
+                        <canvas id="histogramChart"></canvas>
                     </div>
                 </div>
 
-                <!-- Chart Canvas Container -->
-                <div class="relative w-full h-[320px] sm:h-[380px] pt-2">
-                    <canvas id="histogramChart"></canvas>
-                </div>
-            </div>
-
-            <!-- Student Cards List Section -->
-            <div class="lg:col-span-12 bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 sm:p-6 space-y-4">
-                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                    <div>
-                        <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-                            <i class="fa-solid fa-list-ol text-purple-600"></i>
-                            Listado de Alumnos y Registros
-                        </h2>
-                        <p class="text-xs text-slate-500">Suma o resta libros con un clic o escribe la cifra exacta</p>
+                <!-- Chart 2: Individual Ranking Horizontal Chart -->
+                <div class="bg-white p-5 rounded-2xl card-shadow border border-slate-100 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-ranking-star text-amber-500"></i>
+                            Ranking Comparativo de la Clase
+                        </h3>
+                        <span class="text-xs text-slate-400">Libros por alumno</span>
                     </div>
-                    <span id="students-counter-badge" class="px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 font-semibold text-xs">
-                        24 alumnos
-                    </span>
-                </div>
-
-                <!-- Student Grid -->
-                <div id="student-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 max-h-[600px] overflow-y-auto custom-scrollbar pr-1">
-                    <!-- Cards will be populated dynamically -->
+                    <div class="relative h-64 w-full overflow-y-auto">
+                        <canvas id="rankingChart"></canvas>
+                    </div>
                 </div>
             </div>
 
-        </div>
+            <!-- Reading Insights Card -->
+            <div class="bg-gradient-to-br from-indigo-900 to-slate-900 text-white p-6 rounded-2xl card-shadow space-y-4">
+                <h3 class="text-base font-bold flex items-center gap-2">
+                    <i class="fa-solid fa-lightbulb text-amber-400"></i>
+                    Diagnóstico de Lectura de la Clase
+                </h3>
+                <div id="classInsightsGrid" class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+        </section>
+
+        <!-- TAB 3: Data Management, Import/Export & Tools -->
+        <section id="tabContentTools" class="hidden space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                <!-- Export Section -->
+                <div class="bg-white p-6 rounded-2xl card-shadow border border-slate-100 space-y-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg font-bold">
+                            <i class="fa-solid fa-file-export"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-base font-bold text-slate-900">Exportar Lecturas</h3>
+                            <p class="text-xs text-slate-500">Descarga los datos para Excel o copia de seguridad</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3 pt-2">
+                        <button onclick="exportToCSV()" class="w-full flex items-center justify-between p-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-medium text-xs transition border border-emerald-200">
+                            <span class="flex items-center gap-2">
+                                <i class="fa-solid fa-file-excel text-emerald-600 text-base"></i>
+                                Exportar Informe CSV (Compatible con Microsoft Excel)
+                            </span>
+                            <i class="fa-solid fa-download"></i>
+                        </button>
+
+                        <button onclick="exportToJSON()" class="w-full flex items-center justify-between p-3 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-800 font-medium text-xs transition border border-slate-200">
+                            <span class="flex items-center gap-2">
+                                <i class="fa-solid fa-file-code text-indigo-600 text-base"></i>
+                                Exportar Respaldado JSON Completo
+                            </span>
+                            <i class="fa-solid fa-download"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Import Section -->
+                <div class="bg-white p-6 rounded-2xl card-shadow border border-slate-100 space-y-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg font-bold">
+                            <i class="fa-solid fa-file-import"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-base font-bold text-slate-900">Importar / Restaurar</h3>
+                            <p class="text-xs text-slate-500">Carga un archivo JSON o CSV previamente guardado</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3 pt-2">
+                        <label class="w-full flex flex-col items-center px-4 py-4 bg-slate-50 text-slate-600 rounded-xl border-2 border-dashed border-slate-200 hover:border-indigo-400 cursor-pointer transition text-xs font-medium">
+                            <i class="fa-solid fa-cloud-arrow-up text-2xl text-indigo-500 mb-1"></i>
+                            <span>Seleccionar archivo .JSON o .CSV</span>
+                            <span class="text-slate-400 text-[10px] mt-0.5">Se actualizarán los datos de los 24 alumnos</span>
+                            <input type="file" id="importFileInput" accept=".json, .csv" class="hidden" onchange="handleFileImport(event)">
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Danger Zone / Class Reset -->
+                <div class="bg-white p-6 rounded-2xl card-shadow border border-red-100 space-y-4 md:col-span-2">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center text-lg font-bold">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-base font-bold text-slate-900">Opciones Avanzadas y Reajuste</h3>
+                                <p class="text-xs text-slate-500">Reiniciar recuentos o volver al listado inicial de 24 alumnos</p>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="confirmResetCounts()" class="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-700 font-bold text-xs rounded-xl transition border border-red-200 flex items-center gap-1.5">
+                                <i class="fa-solid fa-rotate-left"></i>
+                                Poner contadores a 0
+                            </button>
+
+                            <button onclick="confirmResetToDefault()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-arrows-rotate"></i>
+                                Restablecer Lista Original (24 Alumnos)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
 
     </main>
 
-    <!-- Footer -->
-    <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500 mt-8">
-        <p>Lecturómetro de la Clase &copy; Sistema educativo de seguimiento de lectura con guardado persistente local y en la nube.</p>
-    </footer>
-
-    
-    <!-- Cloud Sync Modal -->
-    <div id="modal-cloud" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 space-y-5 animate-in fade-in zoom-in duration-150">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg">
-                        <i class="fa-solid fa-cloud-arrow-up"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-base font-bold text-slate-800">Sincronización Cloud</h3>
-                        <p class="text-xs text-slate-500">Conecta varios ordenadores o móviles</p>
-                    </div>
+    <!-- Custom Modal Popup -->
+    <div id="customModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 card-shadow animate-pop border border-slate-100">
+            <div class="flex items-center space-x-3">
+                <div id="modalIconContainer" class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl shrink-0">
+                    <i id="modalIcon" class="fa-solid fa-circle-info"></i>
                 </div>
-                <button class="btn-close-modal text-slate-400 hover:text-slate-600 p-1">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
+                <h3 id="modalTitle" class="text-base font-bold text-slate-900">Título Modal</h3>
+            </div>
+            
+            <p id="modalBody" class="text-xs text-slate-600 leading-relaxed">Contenido del mensaje modal aquí.</p>
+            
+            <div id="modalInputContainer" class="hidden">
+                <input type="number" id="modalInput" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500">
             </div>
 
-            <p class="text-xs text-slate-600 leading-relaxed">
-                Introduce una clave o código único para tu aula (ejemplo: <strong class="text-indigo-700">aula-3a-2025</strong>). Todos los dispositivos que introduzcan este mismo código compartirán los datos en tiempo real.
-            </p>
-
-            <div class="space-y-2">
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Código de Sala / Clase</label>
-                <div class="relative">
-                    <input type="text" id="input-room-code" placeholder="Ej: mi-clase-lectura"
-                        class="w-full pl-3.5 pr-10 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-mono font-semibold text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    <button id="btn-generate-code" title="Generar código aleatorio" class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-indigo-600 p-1.5">
-                        <i class="fa-solid fa-shuffle text-sm"></i>
-                    </button>
-                </div>
-            </div>
-
-            <div id="cloud-connection-status" class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 flex items-center space-x-2">
-                <i class="fa-solid fa-info-circle text-indigo-500 text-sm"></i>
-                <span>Estado: Sin conectar a la nube (solo guardado local)</span>
-            </div>
-
-            <div class="flex items-center justify-end space-x-2 pt-2 border-t border-slate-100">
-                <button id="btn-disconnect-cloud" class="px-3.5 py-2 rounded-xl border border-slate-300 text-slate-600 hover:bg-slate-100 text-xs font-semibold transition hidden">
-                    Desconectar
-                </button>
-                <button id="btn-connect-cloud" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-sm transition">
-                    Conectar y Sincronizar
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Add Student Modal -->
-    <div id="modal-add-student" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 space-y-4">
-            <div class="flex items-center justify-between">
-                <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
-                    <i class="fa-solid fa-user-plus text-indigo-600"></i>
-                    Añadir Nuevo Alumno
-                </h3>
-                <button class="btn-close-modal text-slate-400 hover:text-slate-600">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
-            </div>
-
-            <div class="space-y-3 pt-2">
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">Nombre Completo (Apellidos, Nombre)</label>
-                    <input type="text" id="input-new-student-name" placeholder="Ej: García López, Lucía"
-                        class="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">Libros Iniciales</label>
-                    <input type="number" id="input-new-student-books" value="0" min="0"
-                        class="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                </div>
-            </div>
-
-            <div class="flex items-center justify-end space-x-2 pt-3">
-                <button class="btn-close-modal px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl text-xs font-semibold">
+            <div class="flex items-center justify-end space-x-2 pt-2">
+                <button id="modalCancelBtn" onclick="closeModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition">
                     Cancelar
                 </button>
-                <button id="btn-save-new-student" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-sm">
-                    Guardar Alumno
+                <button id="modalConfirmBtn" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition">
+                    Aceptar
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Edit Student Modal -->
-    <div id="modal-edit-student" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 space-y-4">
-            <div class="flex items-center justify-between">
-                <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
-                    <i class="fa-solid fa-user-pen text-indigo-600"></i>
-                    Editar Alumno
-                </h3>
-                <button class="btn-close-modal text-slate-400 hover:text-slate-600">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
-            </div>
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col space-y-2 pointer-events-none"></div>
 
-            <input type="hidden" id="edit-student-id">
-
-            <div class="space-y-3 pt-2">
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">Nombre Alumno</label>
-                    <input type="text" id="input-edit-student-name"
-                        class="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">Libros Leídos</label>
-                    <input type="number" id="input-edit-student-books" min="0"
-                        class="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                </div>
-            </div>
-
-            <div class="flex items-center justify-between pt-3">
-                <button id="btn-delete-student" class="px-3 py-2 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-xl text-xs font-semibold transition">
-                    <i class="fa-solid fa-trash-can mr-1"></i> Eliminar
-                </button>
-                <div class="flex items-center space-x-2">
-                    <button class="btn-close-modal px-3.5 py-2 text-slate-600 hover:bg-slate-100 rounded-xl text-xs font-semibold">
-                        Cancelar
-                    </button>
-                    <button id="btn-save-edit-student" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-sm">
-                        Guardar Cambios
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Reset Confirmation Modal -->
-    <div id="modal-reset" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 text-center space-y-4">
-            <div class="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-xl mx-auto">
-                <i class="fa-solid fa-triangle-exclamation"></i>
-            </div>
-            <div>
-                <h3 class="text-lg font-bold text-slate-800">¿Restablecer todo?</h3>
-                <p class="text-xs text-slate-500 mt-1">
-                    Esta acción restaurará la lista original de los 24 alumnos y pondrá todos los marcadores de libros a 0.
-                </p>
-            </div>
-            <div class="flex items-center justify-center space-x-2 pt-2">
-                <button class="btn-close-modal px-4 py-2 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-xl text-xs font-semibold">
-                    Cancelar
-                </button>
-                <button id="btn-confirm-reset" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-semibold shadow-sm">
-                    Sí, Restablecer
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Notification Toast Container -->
-    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
-
+    <!-- Firebase Script Setup (ES Module) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Pre-loaded original list of 24 students
-        const INITIAL_STUDENTS = [
-            { id: "s1", name: "Beckford Parra, Mateo", books: 0 },
-            { id: "s2", name: "Beltrán Jiménez, Elba", books: 0 },
-            { id: "s3", name: "Cáceres Pesántez, Mía", books: 0 },
-            { id: "s4", name: "Díaz Martínez, María", books: 0 },
-            { id: "s5", name: "Esteban Garrido, Antonio", books: 0 },
-            { id: "s6", name: "Expósito Vena, Ángela", books: 0 },
-            { id: "s7", name: "Gallego de Francisco, Fabio", books: 0 },
-            { id: "s8", name: "Hidalgo Torres, Diego", books: 0 },
-            { id: "s9", name: "Higueras Fernández, Leo", books: 0 },
-            { id: "s10", name: "Jiménez Cordero, Ángel", books: 0 },
-            { id: "s11", name: "Jiménez Montoro, Álvaro", books: 0 },
-            { id: "s12", name: "Lendínez Valderas, Malena", books: 0 },
-            { id: "s13", name: "Martínez Rodríguez, Luis", books: 0 },
-            { id: "s14", name: "Mengíbar Calero, Lucas", books: 0 },
-            { id: "s15", name: "Mesa Lijarcio, Álvaro", books: 0 },
-            { id: "s16", name: "Mesa Montoro, Fátima", books: 0 },
-            { id: "s17", name: "Molina Porras, Paula", books: 0 },
-            { id: "s18", name: "Molina Vílchez, Daniela", books: 0 },
-            { id: "s19", name: "Rentero López, Laura", books: 0 },
-            { id: "s20", name: "Romero Romera, Mario", books: 0 },
-            { id: "s21", name: "Sánchez Ortigoso, Hugo", books: 0 },
-            { id: "s22", name: "Serrano Rojas, Paula", books: 0 },
-            { id: "s23", name: "Torres Montes, José Carlos", books: 0 },
-            { id: "s24", name: "Zoca Hidalgo, Julieta", books: 0 }
+        // Global state and default 24 students pre-load
+        const DEFAULT_STUDENTS = [
+            { id: "1", name: "Beckford Parra, Mateo", books: 0 },
+            { id: "2", name: "Beltrán Jiménez, Elba", books: 0 },
+            { id: "3", name: "Cáceres Pesántez, Mía", books: 0 },
+            { id: "4", name: "Díaz Martínez, María", books: 0 },
+            { id: "5", name: "Esteban Garrido, Antonio", books: 0 },
+            { id: "6", name: "Expósito Vena, Ángela", books: 0 },
+            { id: "7", name: "Gallego de Francisco, Fabio", books: 0 },
+            { id: "8", name: "Hidalgo Torres, Diego", books: 0 },
+            { id: "9", name: "Higueras Fernández, Leo", books: 0 },
+            { id: "10", name: "Jiménez Cordero, Ángel", books: 0 },
+            { id: "11", name: "Jiménez Montoro, Álvaro", books: 0 },
+            { id: "12", name: "Lendínez Valderas, Malena", books: 0 },
+            { id: "13", name: "Martínez Rodríguez, Luis", books: 0 },
+            { id: "14", name: "Mengíbar Calero, Lucas", books: 0 },
+            { id: "15", name: "Mesa Lijarcio, Álvaro", books: 0 },
+            { id: "16", name: "Mesa Montoro, Fátima", books: 0 },
+            { id: "17", name: "Molina Porras, Paula", books: 0 },
+            { id: "18", name: "Molina Vílchez, Daniela", books: 0 },
+            { id: "19", name: "Rentero López, Laura", books: 0 },
+            { id: "20", name: "Romero Romera, Mario", books: 0 },
+            { id: "21", name: "Sánchez Ortigoso, Hugo", books: 0 },
+            { id: "22", name: "Serrano Rojas, Paula", books: 0 },
+            { id: "23", name: "Torres Montes, José Carlos", books: 0 },
+            { id: "24", name: "Zoca Hidalgo, Julieta", books: 0 }
         ];
 
-        // State variables
-        let students = [];
-        let roomCode = "";
+        window.studentsData = JSON.parse(localStorage.getItem('lecturometro_data')) || [...DEFAULT_STUDENTS];
+        window.currentRoomCode = localStorage.getItem('lecturometro_room') || 'aula-2026';
+        window.classGoal = parseInt(localStorage.getItem('lecturometro_goal')) || 100;
+        window.activeTab = 'list';
+        window.layoutView = 'cards'; // 'cards' | 'table'
+        window.histogramChartInstance = null;
+        window.rankingChartInstance = null;
+
         let db = null;
         let auth = null;
-        let unsubRoom = null;
-        let histogramChart = null;
-        let isSyncingFromCloud = false;
+        let currentUser = null;
+        let unsubscribeRoom = null;
 
-        const LOCAL_STORAGE_KEY = "lecturometro_alumnos_data_v2";
-        const ROOM_STORAGE_KEY = "lecturometro_room_code_v2";
-
-        window.addEventListener("DOMContentLoaded", async () => {
-            loadLocalData();
-            initChart();
-            setupEventListeners();
-            renderAll();
-
-            // Check if Firebase is available in environment
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'lecturometro-app';
-            if (typeof __firebase_config !== 'undefined') {
-                try {
-                    const firebaseConfig = JSON.parse(__firebase_config);
-                    const app = initializeApp(firebaseConfig);
-                    auth = getAuth(app);
-                    db = getFirestore(app);
-
-                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                        await signInWithCustomToken(auth, __initial_auth_token);
-                    } else {
-                        await signInAnonymously(auth);
-                    }
-
-                    // Restore saved room code if present
-                    const savedRoom = localStorage.getItem(ROOM_STORAGE_KEY);
-                    if (savedRoom) {
-                        document.getElementById("input-room-code").value = savedRoom;
-                        connectToRoom(savedRoom);
-                    }
-                } catch (err) {
-                    console.warn("Firebase initialization skipped or failed:", err);
-                }
+        // Extract Firebase environment parameters
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'lecturometro-app';
+        let firebaseConfig = null;
+        try {
+            if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+                firebaseConfig = JSON.parse(__firebase_config);
             }
-        });
-
-        // Load data from LocalStorage
-        function loadLocalData() {
-            const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
-            if (raw) {
-                try {
-                    students = JSON.parse(raw);
-                } catch (e) {
-                    students = JSON.parse(JSON.stringify(INITIAL_STUDENTS));
-                }
-            } else {
-                students = JSON.parse(JSON.stringify(INITIAL_STUDENTS));
-                saveLocalData();
-            }
+        } catch (e) {
+            console.error("Firebase config parse error:", e);
         }
 
-        // Save data to LocalStorage
-        function saveLocalData() {
-            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(students));
-            showToast("Guardado en este dispositivo", "success");
+        // Initialize Firebase Authentication & Firestore
+        async function initFirebase() {
+            updateSyncStatus('connecting', 'Conectando...');
             
-            // Push to cloud if connected
-            if (db && roomCode && !isSyncingFromCloud) {
-                syncToCloud();
+            document.getElementById('roomCodeInput').value = window.currentRoomCode;
+
+            if (!firebaseConfig) {
+                updateSyncStatus('offline', 'Modo Local (Sin nube)');
+                renderApp();
+                return;
+            }
+
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                const initialToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                if (initialToken) {
+                    const userCred = await signInWithCustomToken(auth, initialToken);
+                    currentUser = userCred.user;
+                } else {
+                    const userCred = await signInAnonymously(auth);
+                    currentUser = userCred.user;
+                }
+
+                if (currentUser) {
+                    subscribeToRoom(window.currentRoomCode);
+                } else {
+                    updateSyncStatus('offline', 'Modo Local');
+                    renderApp();
+                }
+            } catch (err) {
+                console.warn("Nube inaccesible, pasando a guardado local:", err);
+                updateSyncStatus('offline', 'Modo Local');
+                renderApp();
             }
         }
 
-        // Push data to Firebase Firestore
-        async function syncToCloud() {
-            if (!db || !roomCode) return;
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'lecturometro-app';
-            const roomDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'classrooms', roomCode);
+        // Subscribe in real-time to Firestore document corresponding to Room Code
+        window.subscribeToRoom = function(roomCode) {
+            if (unsubscribeRoom) {
+                unsubscribeRoom();
+                unsubscribeRoom = null;
+            }
+
+            const cleanRoom = roomCode.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '_') || 'aula-2026';
+            window.currentRoomCode = cleanRoom;
+            localStorage.setItem('lecturometro_room', cleanRoom);
+
+            if (!db || !currentUser) {
+                updateSyncStatus('offline', 'Modo Local');
+                renderApp();
+                return;
+            }
+
+            updateSyncStatus('connecting', `Sincronizando ${cleanRoom}...`);
+
+            // RULE 1 compliant path: /artifacts/{appId}/public/data/classrooms/{roomCode}
+            const roomDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'classrooms', cleanRoom);
+
+            unsubscribeRoom = onSnapshot(roomDocRef, 
+                (docSnap) => {
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        if (data && Array.isArray(data.students) && data.students.length > 0) {
+                            window.studentsData = data.students;
+                            if (data.classGoal) window.classGoal = data.classGoal;
+                            saveLocalBackup();
+                            renderApp();
+                            updateSyncStatus('online', `Conectado en línea: ${cleanRoom}`);
+                        }
+                    } else {
+                        // Create new room record with 24 default students
+                        window.saveToCloud(window.studentsData, cleanRoom);
+                        updateSyncStatus('online', `Conectado en línea: ${cleanRoom}`);
+                    }
+                },
+                (error) => {
+                    console.error("Error en sincronización en tiempo real:", error);
+                    updateSyncStatus('offline', 'Sin conexión (Local)');
+                    renderApp();
+                }
+            );
+        };
+
+        // Push local changes to Cloud
+        window.saveToCloud = async function(studentsList = window.studentsData, roomCode = window.currentRoomCode) {
+            saveLocalBackup();
+            if (!db || !currentUser) return;
+
+            const cleanRoom = roomCode.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '_') || 'aula-2026';
+            const roomDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'classrooms', cleanRoom);
+
             try {
                 await setDoc(roomDocRef, {
-                    students: students,
-                    updatedAt: new Date().toISOString()
+                    students: studentsList,
+                    classGoal: window.classGoal,
+                    lastUpdated: new Date().toISOString(),
+                    updatedBy: currentUser.uid
                 }, { merge: true });
-                updateCloudStatusUI(true, `Sincronizado en la nube (Sala: ${roomCode})`);
             } catch (err) {
-                console.error("Error saving to cloud:", err);
-                updateCloudStatusUI(false, "Error de sincronización cloud");
+                console.error("Error guardando en la nube:", err);
+                updateSyncStatus('offline', 'Error guardando en nube');
+            }
+        };
+
+        function saveLocalBackup() {
+            localStorage.setItem('lecturometro_data', JSON.stringify(window.studentsData));
+            localStorage.setItem('lecturometro_goal', window.classGoal);
+        }
+
+        function updateSyncStatus(type, message) {
+            const badge = document.getElementById('syncBadge');
+            const text = document.getElementById('syncStatusText');
+            if (!badge || !text) return;
+
+            text.innerText = message;
+            if (type === 'online') {
+                badge.className = "flex items-center px-3 py-1 rounded-lg text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 animate-pop";
+                badge.querySelector('span').className = "w-2 h-2 rounded-full bg-emerald-400 mr-2 shadow-[0_0_8px_#34d399]";
+            } else if (type === 'connecting') {
+                badge.className = "flex items-center px-3 py-1 rounded-lg text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30";
+                badge.querySelector('span').className = "w-2 h-2 rounded-full bg-amber-400 animate-ping mr-2";
+            } else {
+                badge.className = "flex items-center px-3 py-1 rounded-lg text-xs font-semibold bg-slate-700 text-slate-300 border border-slate-600";
+                badge.querySelector('span').className = "w-2 h-2 rounded-full bg-slate-400 mr-2";
             }
         }
 
-        // Connect to Cloud Room Code
-        function connectToRoom(code) {
-            if (!code || !db) return;
-            roomCode = code.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
-            if (!roomCode) return;
+        // Start initialization on window load
+        window.addEventListener('DOMContentLoaded', () => {
+            initFirebase();
+        });
+    </script>
 
-            localStorage.setItem(ROOM_STORAGE_KEY, roomCode);
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'lecturometro-app';
-            const roomDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'classrooms', roomCode);
+    <!-- Application Logic Script -->
+    <script>
+        // Reading level tier visual badges
+        function getReadingLevel(books) {
+            if (books <= 0) return { title: 'Aprendiz', icon: '🌱', bg: 'bg-slate-100', text: 'text-slate-600', border: 'border-slate-200' };
+            if (books <= 3) return { title: 'Lector Inicial', icon: '📖', bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' };
+            if (books <= 7) return { title: 'Lector Bronce', icon: '🥉', bg: 'bg-amber-50', text: 'text-amber-800', border: 'border-amber-200' };
+            if (books <= 11) return { title: 'Lector Plata', icon: '🥈', bg: 'bg-slate-100', text: 'text-slate-800', border: 'border-slate-300' };
+            if (books <= 15) return { title: 'Lector Oro', icon: '🥇', bg: 'bg-yellow-50', text: 'text-yellow-800', border: 'border-yellow-300' };
+            return { title: 'Lector Diamante', icon: '💎', bg: 'bg-emerald-50', text: 'text-emerald-800', border: 'border-emerald-300' };
+        }
 
-            if (unsubRoom) unsubRoom();
+        // Master Render Function
+        function renderApp() {
+            updateStats();
+            renderStudentsList();
+            if (window.activeTab === 'chart') {
+                renderCharts();
+            }
+        }
 
-            updateCloudStatusUI(true, `Conectando a la sala ${roomCode}...`);
+        // Update Top Banner Stats
+        function updateStats() {
+            const students = window.studentsData || [];
+            const totalBooks = students.reduce((sum, s) => sum + (parseInt(s.books) || 0), 0);
+            const totalStudents = students.length;
+            const avg = totalStudents > 0 ? (totalBooks / totalStudents).toFixed(1) : '0.0';
 
-            unsubRoom = onSnapshot(roomDocRef, (snapshot) => {
-                if (snapshot.exists()) {
-                    const data = snapshot.data();
-                    if (data && Array.isArray(data.students)) {
-                        isSyncingFromCloud = true;
-                        students = data.students;
-                        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(students));
-                        renderAll();
-                        isSyncingFromCloud = false;
-                        showToast(`Datos actualizados desde nube (${roomCode})`, "info");
+            document.getElementById('statTotalBooks').innerText = totalBooks;
+            document.getElementById('statAverageBooks').innerText = avg;
+            document.getElementById('statTotalStudents').innerText = totalStudents;
+
+            // Class goal progress calculation
+            const goalTarget = window.classGoal || 100;
+            document.getElementById('classGoalTarget').innerText = goalTarget;
+            const goalPercent = Math.min(100, Math.round((totalBooks / goalTarget) * 100));
+            document.getElementById('classGoalProgress').style.width = goalPercent + '%';
+
+            // Top Reader calculation
+            if (students.length > 0) {
+                const maxBooks = Math.max(...students.map(s => parseInt(s.books) || 0));
+                if (maxBooks > 0) {
+                    const topReaders = students.filter(s => parseInt(s.books) === maxBooks);
+                    if (topReaders.length === 1) {
+                        document.getElementById('statTopReader').innerText = topReaders[0].name;
+                    } else {
+                        document.getElementById('statTopReader').innerText = `${topReaders.length} Empatados`;
                     }
+                    document.getElementById('statTopReaderCount').innerText = `${maxBooks} libro${maxBooks > 1 ? 's' : ''}`;
                 } else {
-                    // First time creating this room -> push local data
-                    syncToCloud();
+                    document.getElementById('statTopReader').innerText = 'Ninguno';
+                    document.getElementById('statTopReaderCount').innerText = '0 libros';
                 }
-                updateCloudStatusUI(true, `Nube activa: ${roomCode}`);
-            }, (error) => {
-                console.error("Firestore snapshot error:", error);
-                updateCloudStatusUI(false, "Error al escuchar cambios en la nube");
-            });
-
-            document.getElementById("btn-disconnect-cloud").classList.remove("hidden");
-        }
-
-        function disconnectCloud() {
-            if (unsubRoom) unsubRoom();
-            roomCode = "";
-            localStorage.removeItem(ROOM_STORAGE_KEY);
-            updateCloudStatusUI(false, "Sincronización Cloud");
-            document.getElementById("btn-disconnect-cloud").classList.add("hidden");
-            document.getElementById("input-room-code").value = "";
-            showToast("Desconectado de la nube. Modo local activo.", "info");
-        }
-
-        function updateCloudStatusUI(connected, text) {
-            const btnText = document.getElementById("cloud-status-text");
-            const badgeText = document.getElementById("cloud-connection-status");
-            btnText.textContent = text;
-            if (connected) {
-                badgeText.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-500 text-sm"></i> <span>${text}</span>`;
-            } else {
-                badgeText.innerHTML = `<i class="fa-solid fa-circle-xmark text-amber-500 text-sm"></i> <span>${text}</span>`;
             }
         }
 
-        function initChart() {
-            const ctx = document.getElementById('histogramChart').getContext('2d');
-            
-            histogramChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: [],
-                    datasets: [{
-                        label: 'Libros Leídos',
-                        data: [],
-                        backgroundColor: (context) => {
-                            const chart = context.chart;
-                            const {ctx, chartArea} = chart;
-                            if (!chartArea) return '#6366f1';
-                            const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
-                            gradient.addColorStop(0, '#818cf8');
-                            gradient.addColorStop(1, '#4f46e5');
-                            return gradient;
-                        },
-                        borderRadius: 8,
-                        borderSkipped: false,
-                        hoverBackgroundColor: '#4338ca'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    animation: {
-                        duration: 400
-                    },
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: (context) => ` ${context.raw} libros leídos`
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            grid: { display: false },
-                            ticks: {
-                                font: { family: 'Outfit', size: 10 },
-                                maxRotation: 45,
-                                minRotation: 0
-                            }
-                        },
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                precision: 0,
-                                font: { family: 'Outfit', size: 11 }
-                            },
-                            grid: { color: '#f1f5f9' }
-                        }
-                    }
-                }
-            });
-        }
-
-        function updateChart(displayStudents) {
-            if (!histogramChart) return;
-            
-            // Short name for chart label (e.g., "Mateo B.")
-            const labels = displayStudents.map(s => {
-                const parts = s.name.split(',');
-                if (parts.length === 2) {
-                    const apellido = parts[0].trim().split(' ')[0];
-                    const nombre = parts[1].trim();
-                    return `${nombre} ${apellido.charAt(0)}.`;
-                }
-                return s.name;
-            });
-
-            const data = displayStudents.map(s => s.books);
-
-            histogramChart.data.labels = labels;
-            histogramChart.data.datasets[0].data = data;
-            histogramChart.update();
-        }
-
+        // Filter and Sort Students
         function getFilteredAndSortedStudents() {
-            const query = document.getElementById("input-search").value.toLowerCase().trim();
-            const sortMode = document.getElementById("select-sort").value;
-
-            let list = students.filter(s => s.name.toLowerCase().includes(query));
-
-            if (sortMode === "books-desc") {
-                list.sort((a, b) => b.books - a.books || a.name.localeCompare(b.name));
-            } else if (sortMode === "books-asc") {
-                list.sort((a, b) => a.books - b.books || a.name.localeCompare(b.name));
-            } else {
-                // Number / alphabetical
-                list.sort((a, b) => a.name.localeCompare(b.name));
+            let list = [...(window.studentsData || [])];
+            
+            // Search filter
+            const query = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
+            if (query) {
+                list = list.filter(s => s.name.toLowerCase().includes(query));
             }
+
+            // Sort logic
+            const sortVal = document.getElementById('sortSelect')?.value || 'surname_asc';
+            list.sort((a, b) => {
+                const booksA = parseInt(a.books) || 0;
+                const booksB = parseInt(b.books) || 0;
+
+                if (sortVal === 'surname_asc') {
+                    return a.name.localeCompare(b.name, 'es', { sensitivity: 'base' });
+                } else if (sortVal === 'surname_desc') {
+                    return b.name.localeCompare(a.name, 'es', { sensitivity: 'base' });
+                } else if (sortVal === 'books_desc') {
+                    return booksB - booksA || a.name.localeCompare(b.name, 'es');
+                } else if (sortVal === 'books_asc') {
+                    return booksA - booksB || a.name.localeCompare(b.name, 'es');
+                }
+                return 0;
+            });
 
             return list;
         }
 
-        function renderAll() {
-            const displayList = getFilteredAndSortedStudents();
-            renderStudentGrid(displayList);
-            updateChart(displayList);
-            renderStats();
-        }
+        // Render Cards / Table View
+        function renderStudentsList() {
+            const list = getFilteredAndSortedStudents();
+            const gridContainer = document.getElementById('studentsGrid');
+            const tableContainer = document.getElementById('studentsTableContainer');
+            const tableBody = document.getElementById('studentsTableBody');
+            const noResults = document.getElementById('noResults');
 
-        function renderStudentGrid(displayList) {
-            const grid = document.getElementById("student-grid");
-            const counterBadge = document.getElementById("students-counter-badge");
-            counterBadge.textContent = `${displayList.length} de ${students.length} alumnos`;
-
-            if (displayList.length === 0) {
-                grid.innerHTML = `
-                    <div class="col-span-full py-12 text-center text-slate-400">
-                        <i class="fa-solid fa-user-slash text-3xl mb-2"></i>
-                        <p class="text-sm">No se encontraron alumnos con ese criterio.</p>
-                    </div>
-                `;
+            if (list.length === 0) {
+                gridContainer.classList.add('hidden');
+                tableContainer.classList.add('hidden');
+                noResults.classList.remove('hidden');
                 return;
             }
 
-            grid.innerHTML = displayList.map((st, index) => {
-                // Find top leader status
-                const maxBooks = Math.max(...students.map(s => s.books));
-                const isLeader = maxBooks > 0 && st.books === maxBooks;
+            noResults.classList.add('hidden');
 
-                return `
-                    <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-3.5 flex items-center justify-between hover:bg-white hover:shadow-md transition group">
-                        <div class="flex items-center space-x-3 truncate">
-                            <div class="w-10 h-10 rounded-xl ${isLeader ? 'bg-amber-100 text-amber-700' : 'bg-indigo-50 text-indigo-700'} flex items-center justify-center font-bold text-xs shrink-0 relative">
-                                ${getInitials(st.name)}
-                                ${isLeader ? '<i class="fa-solid fa-crown absolute -top-1.5 -right-1.5 text-amber-500 text-xs"></i>' : ''}
+            if (window.layoutView === 'cards') {
+                gridContainer.classList.remove('hidden');
+                tableContainer.classList.add('hidden');
+
+                gridContainer.innerHTML = list.map(student => {
+                    const books = parseInt(student.books) || 0;
+                    const level = getReadingLevel(books);
+                    
+                    // Extract initials from student name
+                    const nameParts = student.name.split(',');
+                    const firstName = nameParts[1] ? nameParts[1].trim() : student.name;
+                    const surname = nameParts[0] ? nameParts[0].trim() : '';
+                    const initials = (surname.charAt(0) + (firstName.charAt(0) || '')).toUpperCase();
+
+                    return `
+                        <div class="bg-white rounded-2xl p-4 card-shadow border border-slate-100 hover:border-indigo-200 transition space-y-3 flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-start justify-between gap-2">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-700 font-bold text-xs flex items-center justify-center shrink-0 border border-indigo-200">
+                                            ${initials}
+                                        </div>
+                                        <div>
+                                            <h4 class="text-xs font-bold text-slate-900 leading-tight">${student.name}</h4>
+                                            <span class="inline-flex items-center px-2 py-0.5 mt-1 rounded-md text-[10px] font-semibold ${level.bg} ${level.text} border ${level.border}">
+                                                ${level.icon} ${level.title}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="truncate cursor-pointer" onclick="openEditModal('${st.id}')">
-                                <h4 class="text-xs font-bold text-slate-800 truncate group-hover:text-indigo-600 transition" title="${st.name}">
-                                    ${st.name}
-                                </h4>
-                                <p class="text-[11px] text-slate-400">Haz clic para editar</p>
+
+                            <!-- Interactive Reading Counter -->
+                            <div class="bg-slate-50 p-3 rounded-xl flex items-center justify-between border border-slate-100">
+                                <button onclick="adjustBooks('${student.id}', -1)" 
+                                    class="w-9 h-9 rounded-lg bg-white shadow-sm border border-slate-200 text-slate-700 font-bold hover:bg-slate-100 active:scale-95 transition flex items-center justify-center text-sm disabled:opacity-40"
+                                    ${books <= 0 ? 'disabled' : ''} title="Restar 1 libro">
+                                    <i class="fa-solid fa-minus"></i>
+                                </button>
+
+                                <div class="text-center px-2">
+                                    <input type="number" min="0" value="${books}" 
+                                        onchange="setBooksDirect('${student.id}', this.value)"
+                                        class="w-14 text-center font-extrabold text-xl bg-transparent text-indigo-900 focus:outline-none focus:ring-1 focus:ring-indigo-400 rounded">
+                                    <span class="block text-[10px] font-medium text-slate-400 uppercase tracking-wide">Libros</span>
+                                </div>
+
+                                <button onclick="adjustBooks('${student.id}', 1)" 
+                                    class="w-9 h-9 rounded-lg bg-indigo-600 shadow-sm text-white font-bold hover:bg-indigo-700 active:scale-95 transition flex items-center justify-center text-sm"
+                                    title="Sumar 1 libro">
+                                    <i class="fa-solid fa-plus"></i>
+                                </button>
                             </div>
                         </div>
+                    `;
+                }).join('');
 
-                        <!-- Book Counter Controls -->
-                        <div class="flex items-center space-x-1.5 shrink-0">
-                            <button onclick="changeBooks('${st.id}', -1)" class="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 active:scale-95 transition flex items-center justify-center text-xs shadow-sm">
-                                <i class="fa-solid fa-minus"></i>
-                            </button>
-                            
-                            <input type="number" min="0" value="${st.books}" 
-                                onchange="setBooksDirect('${st.id}', this.value)"
-                                class="w-11 h-8 bg-white border border-slate-200 rounded-lg text-center font-bold text-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            
-                            <button onclick="changeBooks('${st.id}', 1)" class="w-8 h-8 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 active:scale-95 transition flex items-center justify-center text-xs shadow-sm">
-                                <i class="fa-solid fa-plus"></i>
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function getInitials(name) {
-            const parts = name.split(',');
-            if (parts.length === 2) {
-                const nombre = parts[1].trim();
-                const apellido = parts[0].trim();
-                return `${nombre.charAt(0)}${apellido.charAt(0)}`.toUpperCase();
-            }
-            return name.substring(0, 2).toUpperCase();
-        }
-
-        function renderStats() {
-            const total = students.reduce((acc, s) => acc + (s.books || 0), 0);
-            const avg = students.length > 0 ? (total / students.length).toFixed(1) : "0.0";
-            const maxBooks = Math.max(...students.map(s => s.books || 0), 0);
-            
-            const leaders = students.filter(s => s.books === maxBooks && maxBooks > 0);
-
-            document.getElementById("stat-total-books").textContent = total;
-            document.getElementById("stat-avg-books").textContent = avg;
-            document.getElementById("stat-total-students").textContent = students.length;
-
-            const leaderNameEl = document.getElementById("stat-leader-name");
-            const leaderCountEl = document.getElementById("stat-leader-count");
-
-            if (leaders.length === 1) {
-                leaderNameEl.textContent = leaders[0].name;
-                leaderCountEl.innerHTML = `<i class="fa-solid fa-star text-amber-500"></i> ${maxBooks} libros leídos`;
-            } else if (leaders.length > 1) {
-                leaderNameEl.textContent = `${leaders.length} Alumnos empatados`;
-                leaderCountEl.innerHTML = `<i class="fa-solid fa-star text-amber-500"></i> ${maxBooks} libros cada uno`;
             } else {
-                leaderNameEl.textContent = "-";
-                leaderCountEl.innerHTML = `<i class="fa-solid fa-star text-slate-300"></i> 0 libros leídos`;
+                gridContainer.classList.add('hidden');
+                tableContainer.classList.remove('hidden');
+
+                tableBody.innerHTML = list.map((student, idx) => {
+                    const books = parseInt(student.books) || 0;
+                    const level = getReadingLevel(books);
+
+                    return `
+                        <tr class="hover:bg-slate-50/80 transition">
+                            <td class="py-3 px-4 font-mono text-xs text-slate-400">${idx + 1}</td>
+                            <td class="py-3 px-4 font-bold text-slate-800 text-xs">${student.name}</td>
+                            <td class="py-3 px-4 text-center">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold ${level.bg} ${level.text} border ${level.border}">
+                                    ${level.icon} ${level.title}
+                                </span>
+                            </td>
+                            <td class="py-3 px-4 text-center font-extrabold text-indigo-900 text-base">
+                                ${books}
+                            </td>
+                            <td class="py-3 px-4 text-center">
+                                <div class="inline-flex items-center space-x-1">
+                                    <button onclick="adjustBooks('${student.id}', -1)" ${books <= 0 ? 'disabled' : ''}
+                                        class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-xs font-bold disabled:opacity-40">
+                                        -1
+                                    </button>
+                                    <button onclick="adjustBooks('${student.id}', 1)"
+                                        class="px-2 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-xs font-bold">
+                                        +1
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
             }
         }
 
-        window.changeBooks = function(id, delta) {
-            const st = students.find(s => s.id === id);
-            if (st) {
-                st.books = Math.max(0, (st.books || 0) + delta);
-                saveLocalData();
-                renderAll();
-            }
-        };
+        // Increment or Decrement Books
+        function adjustBooks(studentId, delta) {
+            const student = window.studentsData.find(s => s.id === studentId);
+            if (!student) return;
 
-        window.setBooksDirect = function(id, value) {
-            const val = parseInt(value, 10);
-            const st = students.find(s => s.id === id);
-            if (st && !isNaN(val)) {
-                st.books = Math.max(0, val);
-                saveLocalData();
-                renderAll();
-            }
-        };
+            let current = parseInt(student.books) || 0;
+            current = Math.max(0, current + delta);
+            student.books = current;
 
-        window.openEditModal = function(id) {
-            const st = students.find(s => s.id === id);
-            if (!st) return;
-            document.getElementById("edit-student-id").value = st.id;
-            document.getElementById("input-edit-student-name").value = st.name;
-            document.getElementById("input-edit-student-books").value = st.books;
-            document.getElementById("modal-edit-student").classList.remove("hidden");
-        };
+            window.saveToCloud();
+            renderApp();
+            showToast(`${delta > 0 ? '+1' : '-1'} libro para ${student.name.split(',')[1] || student.name}`);
+        }
 
-        function setupEventListeners() {
-            // Search & Sort listeners
-            document.getElementById("input-search").addEventListener("input", renderAll);
-            document.getElementById("select-sort").addEventListener("change", renderAll);
+        // Direct numeric edit
+        function setBooksDirect(studentId, val) {
+            const student = window.studentsData.find(s => s.id === studentId);
+            if (!student) return;
 
-            // Cloud Sync Modal Triggers
-            document.getElementById("btn-open-cloud").addEventListener("click", () => {
-                document.getElementById("modal-cloud").classList.remove("hidden");
+            let newCount = parseInt(val);
+            if (isNaN(newCount) || newCount < 0) newCount = 0;
+
+            student.books = newCount;
+            window.saveToCloud();
+            renderApp();
+            showToast(`Lecturas actualizadas a ${newCount} para ${student.name.split(',')[1] || student.name}`);
+        }
+
+        // UI View Layout Toggles
+        function setLayoutView(view) {
+            window.layoutView = view;
+            document.getElementById('viewCardsBtn').className = view === 'cards' 
+                ? 'p-1.5 rounded-lg text-xs text-indigo-600 bg-white shadow-sm' 
+                : 'p-1.5 rounded-lg text-xs text-slate-500 hover:text-slate-800';
+            document.getElementById('viewTableBtn').className = view === 'table' 
+                ? 'p-1.5 rounded-lg text-xs text-indigo-600 bg-white shadow-sm' 
+                : 'p-1.5 rounded-lg text-xs text-slate-500 hover:text-slate-800';
+            renderStudentsList();
+        }
+
+        // Render Charts & Visual Histogram
+        function renderCharts() {
+            if (typeof Chart === 'undefined') return;
+
+            const students = window.studentsData || [];
+            const paletteKey = document.getElementById('paletteSelect')?.value || 'indigo';
+
+            // Color Palettes Definition
+            const palettes = {
+                indigo: ['#6366f1', '#4f46e5', '#4338ca', '#3730a3', '#312e81'],
+                emerald: ['#10b981', '#059669', '#047857', '#065f46', '#064e3b'],
+                sunset: ['#f59e0b', '#f97316', '#ef4444', '#dc2626', '#b91c1c'],
+                ocean: ['#06b6d4', '#0284c7', '#2563eb', '#1d4ed8', '#1e40af'],
+                neon: ['#ec4899', '#8b5cf6', '#3b82f6', '#10b981', '#f59e0b']
+            };
+            const currentColors = palettes[paletteKey] || palettes.indigo;
+
+            // Chart 1: Histogram Ranges
+            // Ranges: 0 books, 1-3 books, 4-7 books, 8-12 books, 13+ books
+            const rangeCounts = [0, 0, 0, 0, 0];
+            students.forEach(s => {
+                const b = parseInt(s.books) || 0;
+                if (b === 0) rangeCounts[0]++;
+                else if (b <= 3) rangeCounts[1]++;
+                else if (b <= 7) rangeCounts[2]++;
+                else if (b <= 12) rangeCounts[3]++;
+                else rangeCounts[4]++;
             });
 
-            document.getElementById("btn-connect-cloud").addEventListener("click", () => {
-                const code = document.getElementById("input-room-code").value;
-                if (code) {
-                    connectToRoom(code);
-                    document.getElementById("modal-cloud").classList.add("hidden");
-                }
-            });
+            const histCtx = document.getElementById('histogramChart')?.getContext('2d');
+            if (histCtx) {
+                if (window.histogramChartInstance) window.histogramChartInstance.destroy();
 
-            document.getElementById("btn-disconnect-cloud").addEventListener("click", () => {
-                disconnectCloud();
-                document.getElementById("modal-cloud").classList.add("hidden");
-            });
-
-            document.getElementById("btn-generate-code").addEventListener("click", () => {
-                const randCode = "aula-" + Math.floor(1000 + Math.random() * 9000);
-                document.getElementById("input-room-code").value = randCode;
-            });
-
-            // Add Student Modal Triggers
-            document.getElementById("btn-open-add-modal").addEventListener("click", () => {
-                document.getElementById("input-new-student-name").value = "";
-                document.getElementById("input-new-student-books").value = "0";
-                document.getElementById("modal-add-student").classList.remove("hidden");
-            });
-
-            document.getElementById("btn-save-new-student").addEventListener("click", () => {
-                const name = document.getElementById("input-new-student-name").value.trim();
-                const books = parseInt(document.getElementById("input-new-student-books").value, 10) || 0;
-
-                if (!name) {
-                    showToast("Escribe un nombre válido", "error");
-                    return;
-                }
-
-                const newSt = {
-                    id: "s_" + Date.now(),
-                    name: name,
-                    books: Math.max(0, books)
-                };
-
-                students.push(newSt);
-                saveLocalData();
-                renderAll();
-                document.getElementById("modal-add-student").classList.add("hidden");
-                showToast("Alumno añadido con éxito", "success");
-            });
-
-            // Edit Student Modal Save / Delete
-            document.getElementById("btn-save-edit-student").addEventListener("click", () => {
-                const id = document.getElementById("edit-student-id").value;
-                const name = document.getElementById("input-edit-student-name").value.trim();
-                const books = parseInt(document.getElementById("input-edit-student-books").value, 10) || 0;
-
-                const st = students.find(s => s.id === id);
-                if (st && name) {
-                    st.name = name;
-                    st.books = Math.max(0, books);
-                    saveLocalData();
-                    renderAll();
-                    document.getElementById("modal-edit-student").classList.add("hidden");
-                    showToast("Alumno actualizado", "success");
-                }
-            });
-
-            document.getElementById("btn-delete-student").addEventListener("click", () => {
-                const id = document.getElementById("edit-student-id").value;
-                students = students.filter(s => s.id !== id);
-                saveLocalData();
-                renderAll();
-                document.getElementById("modal-edit-student").classList.add("hidden");
-                showToast("Alumno eliminado", "info");
-            });
-
-            // Reset Data Modal
-            document.getElementById("btn-reset-data").addEventListener("click", () => {
-                document.getElementById("modal-reset").classList.remove("hidden");
-            });
-
-            document.getElementById("btn-confirm-reset").addEventListener("click", () => {
-                students = JSON.parse(JSON.stringify(INITIAL_STUDENTS));
-                saveLocalData();
-                renderAll();
-                document.getElementById("modal-reset").classList.add("hidden");
-                showToast("Datos restablecidos de fábrica", "info");
-            });
-
-            // Close all modals
-            document.querySelectorAll(".btn-close-modal").forEach(btn => {
-                btn.addEventListener("click", () => {
-                    document.querySelectorAll(".fixed").forEach(m => m.classList.add("hidden"));
-                });
-            });
-
-            // Export to CSV
-            document.getElementById("btn-export-csv").addEventListener("click", () => {
-                let csvContent = "data:text/csv;charset=utf-8,Alumno,Libros Leidos\n";
-                students.forEach(s => {
-                    csvContent += `"${s.name}",${s.books}\n`;
-                });
-                const encodedUri = encodeURI(csvContent);
-                const link = document.createElement("a");
-                link.setAttribute("href", encodedUri);
-                link.setAttribute("download", `lecturas_clase_${new Date().toISOString().slice(0,10)}.csv`);
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                showToast("CSV descargado para Excel", "success");
-            });
-
-            // Export to JSON
-            document.getElementById("btn-export-json").addEventListener("click", () => {
-                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(students, null, 2));
-                const downloadAnchor = document.createElement('a');
-                downloadAnchor.setAttribute("href", dataStr);
-                downloadAnchor.setAttribute("download", `copia_seguridad_lecturas_${new Date().toISOString().slice(0,10)}.json`);
-                document.body.appendChild(downloadAnchor);
-                downloadAnchor.click();
-                downloadAnchor.remove();
-                showToast("Copia de seguridad guardada", "success");
-            });
-
-            // Import from JSON
-            document.getElementById("input-import-json").addEventListener("change", (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    try {
-                        const imported = JSON.parse(event.target.result);
-                        if (Array.isArray(imported)) {
-                            students = imported;
-                            saveLocalData();
-                            renderAll();
-                            showToast("Datos importados con éxito", "success");
-                        } else {
-                            showToast("Archivo JSON no válido", "error");
+                window.histogramChartInstance = new Chart(histCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['0 Libros', '1-3 Libros', '4-7 Libros', '8-12 Libros', '13+ Libros'],
+                        datasets: [{
+                            label: 'Nº Alumnos',
+                            data: rangeCounts,
+                            backgroundColor: currentColors,
+                            borderRadius: 8,
+                            borderSkipped: false
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: (ctx) => `${ctx.raw} alumno(s)`
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: { stepSize: 1, font: { family: 'Inter', size: 11 } },
+                                grid: { color: '#f1f5f9' }
+                            },
+                            x: {
+                                ticks: { font: { family: 'Inter', size: 11, weight: '600' } },
+                                grid: { display: false }
+                            }
                         }
-                    } catch (err) {
-                        showToast("Error al leer el archivo JSON", "error");
                     }
-                };
-                reader.readAsText(file);
+                });
+            }
+
+            // Chart 2: Student Ranking Horizontal Bar Chart
+            const sortedByBooks = [...students].sort((a, b) => (parseInt(b.books) || 0) - (parseInt(a.books) || 0));
+            const labels = sortedByBooks.map(s => {
+                const parts = s.name.split(',');
+                return parts[1] ? `${parts[1].trim()} ${parts[0].charAt(0)}.` : s.name;
+            });
+            const dataBooks = sortedByBooks.map(s => parseInt(s.books) || 0);
+
+            const rankCtx = document.getElementById('rankingChart')?.getContext('2d');
+            if (rankCtx) {
+                if (window.rankingChartInstance) window.rankingChartInstance.destroy();
+
+                window.rankingChartInstance = new Chart(rankCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Libros Leídos',
+                            data: dataBooks,
+                            backgroundColor: currentColors[0],
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                ticks: { stepSize: 1, font: { family: 'Inter', size: 10 } },
+                                grid: { color: '#f1f5f9' }
+                            },
+                            y: {
+                                ticks: { font: { family: 'Inter', size: 10 } },
+                                grid: { display: false }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Diagnostic Class Insights Text
+            const total = students.length;
+            const readers3Plus = students.filter(s => (parseInt(s.books) || 0) >= 3).length;
+            const percent3Plus = total > 0 ? Math.round((readers3Plus / total) * 100) : 0;
+            const zeroReaders = rangeCounts[0];
+
+            document.getElementById('classInsightsGrid').innerHTML = `
+                <div class="bg-white/10 p-3 rounded-xl backdrop-blur-sm">
+                    <span class="text-amber-300 font-bold block text-sm">${percent3Plus}% de la Clase</span>
+                    <span>Ha leído 3 o más libros esta temporada</span>
+                </div>
+                <div class="bg-white/10 p-3 rounded-xl backdrop-blur-sm">
+                    <span class="text-indigo-300 font-bold block text-sm">${zeroReaders} Alumnos</span>
+                    <span>Aún no han registrado su primer libro</span>
+                </div>
+                <div class="bg-white/10 p-3 rounded-xl backdrop-blur-sm">
+                    <span class="text-emerald-300 font-bold block text-sm">${rangeCounts[4]} Lectores Diamante</span>
+                    <span>Han superado el umbral de 13 libros</span>
+                </div>
+            `;
+        }
+
+        // Tab Switcher
+        function switchTab(tab) {
+            window.activeTab = tab;
+            const btnList = document.getElementById('tabBtnList');
+            const btnChart = document.getElementById('tabBtnChart');
+            const btnTools = document.getElementById('tabBtnTools');
+
+            const contentList = document.getElementById('tabContentList');
+            const contentChart = document.getElementById('tabContentChart');
+            const contentTools = document.getElementById('tabContentTools');
+            const listControls = document.getElementById('listControls');
+
+            // Reset tab button styles
+            [btnList, btnChart, btnTools].forEach(btn => {
+                btn.className = "px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 text-slate-600 hover:text-slate-900";
+            });
+
+            contentList.classList.add('hidden');
+            contentChart.classList.add('hidden');
+            contentTools.classList.add('hidden');
+
+            if (tab === 'list') {
+                btnList.className = "px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 bg-white text-indigo-600 shadow-sm";
+                contentList.classList.remove('hidden');
+                listControls.classList.remove('hidden');
+            } else if (tab === 'chart') {
+                btnChart.className = "px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 bg-white text-indigo-600 shadow-sm";
+                contentChart.classList.remove('hidden');
+                listControls.classList.add('hidden');
+                renderCharts();
+            } else if (tab === 'tools') {
+                btnTools.className = "px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 bg-white text-indigo-600 shadow-sm";
+                contentTools.classList.remove('hidden');
+                listControls.classList.add('hidden');
+            }
+        }
+
+        // Room Code Change Handler
+        function changeRoomCode() {
+            const newCode = document.getElementById('roomCodeInput').value;
+            if (!newCode.trim()) {
+                showToast("Por favor ingresa un código de sala válido", "error");
+                return;
+            }
+            if (window.subscribeToRoom) {
+                window.subscribeToRoom(newCode);
+                showToast(`Te has unido a la sala: ${newCode.trim()}`);
+            }
+        }
+
+        // Search Handlers
+        function handleSearch() {
+            const input = document.getElementById('searchInput');
+            const clearBtn = document.getElementById('clearSearchBtn');
+            if (input.value.length > 0) {
+                clearBtn.classList.remove('hidden');
+            } else {
+                clearBtn.classList.add('hidden');
+            }
+            renderStudentsList();
+        }
+
+        function clearSearch() {
+            const input = document.getElementById('searchInput');
+            input.value = '';
+            document.getElementById('clearSearchBtn').classList.add('hidden');
+            renderStudentsList();
+        }
+
+        function handleSortChange() {
+            renderStudentsList();
+        }
+
+        // Export Data as CSV (Compatible with Excel)
+        function exportToCSV() {
+            const students = window.studentsData || [];
+            let csvContent = "\uFEFF"; // UTF-8 BOM for Excel Spanish accents
+            csvContent += "ID;Apellidos y Nombre;Libros Leidos;Nivel\n";
+
+            students.forEach(s => {
+                const books = parseInt(s.books) || 0;
+                const level = getReadingLevel(books).title;
+                csvContent += `"${s.id}";"${s.name}";${books};"${level}"\n`;
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `lecturometro_${window.currentRoomCode}_${new Date().toISOString().slice(0,10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showToast("Informe CSV descargado con éxito");
+        }
+
+        // Export Data as JSON
+        function exportToJSON() {
+            const payload = {
+                roomCode: window.currentRoomCode,
+                classGoal: window.classGoal,
+                exportDate: new Date().toISOString(),
+                students: window.studentsData
+            };
+
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(payload, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `lecturometro_backup_${window.currentRoomCode}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+
+            showToast("Respaldo JSON descargado con éxito");
+        }
+
+        // Import File Handler (.JSON or .CSV)
+        function handleFileImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+                try {
+                    if (file.name.endsWith('.json')) {
+                        const parsed = JSON.parse(content);
+                        if (parsed && Array.isArray(parsed.students)) {
+                            window.studentsData = parsed.students;
+                            if (parsed.classGoal) window.classGoal = parsed.classGoal;
+                            window.saveToCloud();
+                            renderApp();
+                            showToast("Datos importados con éxito desde JSON");
+                        } else {
+                            throw new Error("Formato JSON inválido");
+                        }
+                    } else if (file.name.endsWith('.csv')) {
+                        const lines = content.split('\n');
+                        const importedStudents = [];
+                        let idCounter = 1;
+
+                        for (let i = 1; i < lines.length; i++) {
+                            const line = lines[i].trim();
+                            if (!line) continue;
+                            const parts = line.split(';');
+                            if (parts.length >= 2) {
+                                const name = parts[1].replace(/"/g, '').trim();
+                                const books = parseInt(parts[2]?.replace(/"/g, '')) || 0;
+                                if (name) {
+                                    importedStudents.push({ id: String(idCounter++), name, books });
+                                }
+                            }
+                        }
+
+                        if (importedStudents.length > 0) {
+                            window.studentsData = importedStudents;
+                            window.saveToCloud();
+                            renderApp();
+                            showToast(`Se cargaron ${importedStudents.length} alumnos desde CSV`);
+                        } else {
+                            throw new Error("No se encontraron registros en el CSV");
+                        }
+                    }
+                } catch (err) {
+                    showModal({
+                        title: "Error de Importación",
+                        body: "El archivo no tiene el formato correcto. Asegúrate de subir un archivo JSON o CSV válido.",
+                        icon: "fa-triangle-exclamation text-red-500",
+                        showCancel: false
+                    });
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = ''; // Reset file input
+        }
+
+        // Edit Class Goal Modal Prompt
+        function promptEditClassGoal() {
+            showModal({
+                title: "Establecer Meta de Lectura de la Clase",
+                body: "Indica el objetivo total de libros a leer entre todos los alumnos:",
+                icon: "fa-bullseye text-indigo-600",
+                showInput: true,
+                inputValue: window.classGoal,
+                onConfirm: (val) => {
+                    const newGoal = parseInt(val);
+                    if (!isNaN(newGoal) && newGoal > 0) {
+                        window.classGoal = newGoal;
+                        window.saveToCloud();
+                        renderApp();
+                        showToast(`Meta de clase actualizada a ${newGoal} libros`);
+                    }
+                }
             });
         }
 
-        // Custom Toast Notifications
-        function showToast(message, type = "info") {
-            const container = document.getElementById("toast-container");
-            const toast = document.createElement("div");
-            
-            let bgClass = "bg-slate-800 text-white";
-            let icon = "fa-circle-info";
+        // Reset Counters Confirmation
+        function confirmResetCounts() {
+            showModal({
+                title: "¿Poner todos los contadores a 0?",
+                body: "Esta acción reiniciará a cero los libros leídos de todos los alumnos de la sala actual. ¿Deseas continuar?",
+                icon: "fa-rotate-left text-red-500",
+                onConfirm: () => {
+                    window.studentsData.forEach(s => s.books = 0);
+                    window.saveToCloud();
+                    renderApp();
+                    showToast("Todos los contadores han sido puestos a 0");
+                }
+            });
+        }
 
-            if (type === "success") {
-                bgClass = "bg-emerald-600 text-white";
-                icon = "fa-circle-check";
-            } else if (type === "error") {
-                bgClass = "bg-rose-600 text-white";
-                icon = "fa-circle-exclamation";
+        // Reset to Default 24 Students Confirmation
+        function confirmResetToDefault() {
+            showModal({
+                title: "¿Restablecer listado original?",
+                body: "Se cargará nuevamente la lista exacta de 24 alumnos predeterminada con sus contadores a 0. Se sobrescribirá el listado actual.",
+                icon: "fa-arrows-rotate text-amber-500",
+                onConfirm: () => {
+                    const DEFAULT_LIST = [
+                        { id: "1", name: "Beckford Parra, Mateo", books: 0 },
+                        { id: "2", name: "Beltrán Jiménez, Elba", books: 0 },
+                        { id: "3", name: "Cáceres Pesántez, Mía", books: 0 },
+                        { id: "4", name: "Díaz Martínez, María", books: 0 },
+                        { id: "5", name: "Esteban Garrido, Antonio", books: 0 },
+                        { id: "6", name: "Expósito Vena, Ángela", books: 0 },
+                        { id: "7", name: "Gallego de Francisco, Fabio", books: 0 },
+                        { id: "8", name: "Hidalgo Torres, Diego", books: 0 },
+                        { id: "9", name: "Higueras Fernández, Leo", books: 0 },
+                        { id: "10", name: "Jiménez Cordero, Ángel", books: 0 },
+                        { id: "11", name: "Jiménez Montoro, Álvaro", books: 0 },
+                        { id: "12", name: "Lendínez Valderas, Malena", books: 0 },
+                        { id: "13", name: "Martínez Rodríguez, Luis", books: 0 },
+                        { id: "14", name: "Mengíbar Calero, Lucas", books: 0 },
+                        { id: "15", name: "Mesa Lijarcio, Álvaro", books: 0 },
+                        { id: "16", name: "Mesa Montoro, Fátima", books: 0 },
+                        { id: "17", name: "Molina Porras, Paula", books: 0 },
+                        { id: "18", name: "Molina Vílchez, Daniela", books: 0 },
+                        { id: "19", name: "Rentero López, Laura", books: 0 },
+                        { id: "20", name: "Romero Romera, Mario", books: 0 },
+                        { id: "21", name: "Sánchez Ortigoso, Hugo", books: 0 },
+                        { id: "22", name: "Serrano Rojas, Paula", books: 0 },
+                        { id: "23", name: "Torres Montes, José Carlos", books: 0 },
+                        { id: "24", name: "Zoca Hidalgo, Julieta", books: 0 }
+                    ];
+                    window.studentsData = DEFAULT_LIST;
+                    window.saveToCloud();
+                    renderApp();
+                    showToast("Lista inicial de 24 alumnos restaurada");
+                }
+            });
+        }
+
+        // Copy Room Code / Link to Clipboard
+        function copyRoomLink() {
+            const tempInput = document.createElement('input');
+            tempInput.value = window.currentRoomCode;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+            showToast(`Código de sala "${window.currentRoomCode}" copiado al portapapeles`);
+        }
+
+        // Modal System
+        let modalConfirmCallback = null;
+
+        function showModal({ title, body, icon = "fa-circle-info", showInput = false, inputValue = "", showCancel = true, onConfirm = null }) {
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalBody').innerText = body;
+            
+            const iconEl = document.getElementById('modalIcon');
+            iconEl.className = `fa-solid ${icon}`;
+
+            const inputContainer = document.getElementById('modalInputContainer');
+            const inputEl = document.getElementById('modalInput');
+            if (showInput) {
+                inputContainer.classList.remove('hidden');
+                inputEl.value = inputValue;
+            } else {
+                inputContainer.classList.add('hidden');
             }
 
-            toast.className = `${bgClass} px-4 py-2.5 rounded-xl shadow-lg text-xs font-semibold flex items-center space-x-2 transition-all duration-300 transform translate-y-2 opacity-0 pointer-events-auto`;
-            toast.innerHTML = `<i class="fa-solid ${icon}"></i><span>${message}</span>`;
+            const cancelBtn = document.getElementById('modalCancelBtn');
+            if (showCancel) {
+                cancelBtn.classList.remove('hidden');
+            } else {
+                cancelBtn.classList.add('hidden');
+            }
+
+            modalConfirmCallback = onConfirm;
+            
+            const modalConfirmBtn = document.getElementById('modalConfirmBtn');
+            modalConfirmBtn.onclick = () => {
+                if (modalConfirmCallback) {
+                    modalConfirmCallback(showInput ? inputEl.value : true);
+                }
+                closeModal();
+            };
+
+            document.getElementById('customModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('customModal').classList.add('hidden');
+            modalConfirmCallback = null;
+        }
+
+        // Toast Notification Helper
+        function showToast(msg, type = "info") {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+
+            const toast = document.createElement('div');
+            toast.className = "bg-slate-900 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-lg border border-slate-700 flex items-center space-x-2 animate-pop pointer-events-auto";
+            
+            const icon = type === "warning" ? "fa-triangle-exclamation text-amber-400" : "fa-circle-check text-emerald-400";
+            toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${msg}</span>`;
 
             container.appendChild(toast);
-
             setTimeout(() => {
-                toast.classList.remove("translate-y-2", "opacity-0");
-            }, 10);
-
-            setTimeout(() => {
-                toast.classList.add("opacity-0", "translate-y-2");
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s';
                 setTimeout(() => toast.remove(), 300);
             }, 2500);
         }
     </script>
+
 </body>
 </html>
