@@ -8,8 +8,11 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Chart.js for Visual Histogram & Charts -->
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- PeerJS para sincronización P2P directa sin servidor/Firebase -->
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -41,27 +44,12 @@
     </script>
 
     <style>
-        /* Custom scrollbars and transition effects */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
-        .card-shadow {
-            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.02);
-        }
-        .animate-pop {
-            animation: pop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .card-shadow { box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.02); }
+        .animate-pop { animation: pop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes pop {
             0% { transform: scale(0.95); opacity: 0; }
             100% { transform: scale(1); opacity: 1; }
@@ -70,12 +58,11 @@
 </head>
 <body class="font-sans antialiased h-full text-slate-800 flex flex-col min-h-screen">
 
-    <!-- Navigation Header -->
+    <!-- Header / Barra Superior -->
     <header class="bg-indigo-900 text-white shadow-lg sticky top-0 z-30">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex flex-col md:flex-row items-center justify-between py-3 gap-3">
                 
-                <!-- Logo & Title -->
                 <div class="flex items-center space-x-3">
                     <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white text-xl shadow-md">
                         <i class="fa-solid fa-book-open-reader"></i>
@@ -86,7 +73,7 @@
                     </div>
                 </div>
 
-                <!-- Room Code & Connection Status Controls -->
+                <!-- Controles de Sala y Conexión P2P -->
                 <div class="flex flex-wrap items-center gap-2 bg-indigo-950/60 p-2 rounded-xl border border-indigo-700/50">
                     <div class="flex items-center px-2 py-1 bg-indigo-900/80 rounded-lg border border-indigo-700 text-xs">
                         <i class="fa-solid fa-door-open text-indigo-300 mr-2"></i>
@@ -101,14 +88,12 @@
                         </button>
                     </div>
 
-                    <!-- Sync Status Indicator -->
                     <div id="syncBadge" class="flex items-center px-3 py-1 rounded-lg text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30">
                         <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping mr-2"></span>
                         <span id="syncStatusText">Conectando...</span>
                     </div>
 
-                    <!-- Share Room Button -->
-                    <button onclick="copyRoomLink()" class="px-2.5 py-1 text-xs bg-indigo-800 hover:bg-indigo-700 text-indigo-100 rounded-lg transition flex items-center gap-1.5" title="Copiar código de sala">
+                    <button onclick="copyRoomLink()" class="px-2.5 py-1 text-xs bg-indigo-800 hover:bg-indigo-700 text-indigo-100 rounded-lg transition flex items-center gap-1.5" title="Copiar enlace de sala">
                         <i class="fa-solid fa-share-nodes"></i>
                         <span class="hidden sm:inline">Compartir</span>
                     </button>
@@ -118,12 +103,11 @@
         </div>
     </header>
 
-    <!-- Main Container -->
+    <!-- Contenido Principal -->
     <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
-        <!-- Top Stats Banner -->
+        <!-- Banner Estadísticas -->
         <section class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <!-- Total Books -->
             <div class="bg-white p-4 rounded-2xl card-shadow border border-slate-100 flex items-center space-x-4">
                 <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl shrink-0">
                     <i class="fa-solid fa-books"></i>
@@ -134,7 +118,6 @@
                 </div>
             </div>
 
-            <!-- Average Per Student -->
             <div class="bg-white p-4 rounded-2xl card-shadow border border-slate-100 flex items-center space-x-4">
                 <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shrink-0">
                     <i class="fa-solid fa-calculator"></i>
@@ -145,7 +128,6 @@
                 </div>
             </div>
 
-            <!-- Top Reader -->
             <div class="bg-white p-4 rounded-2xl card-shadow border border-slate-100 flex items-center space-x-4">
                 <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl shrink-0">
                     <i class="fa-solid fa-crown"></i>
@@ -157,7 +139,6 @@
                 </div>
             </div>
 
-            <!-- Total Students -->
             <div class="bg-white p-4 rounded-2xl card-shadow border border-slate-100 flex items-center space-x-4">
                 <div class="w-12 h-12 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center text-xl shrink-0">
                     <i class="fa-solid fa-users"></i>
@@ -169,10 +150,8 @@
             </div>
         </section>
 
-        <!-- Controls & Navigation Bar -->
+        <!-- Pestañas y Controles -->
         <section class="bg-white p-4 rounded-2xl card-shadow border border-slate-100 space-y-4">
-            
-            <!-- View Mode Tabs -->
             <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
                 <div class="flex items-center space-x-2 bg-slate-100 p-1 rounded-xl">
                     <button id="tabBtnList" onclick="switchTab('list')" 
@@ -192,7 +171,6 @@
                     </button>
                 </div>
 
-                <!-- Quick Goal Bar -->
                 <div class="flex items-center gap-2 text-xs font-medium text-slate-600 bg-indigo-50/50 px-3 py-1.5 rounded-xl border border-indigo-100">
                     <i class="fa-solid fa-bullseye text-indigo-600"></i>
                     <span>Meta de Clase: <strong id="classGoalTarget">100</strong> libros</span>
@@ -205,9 +183,8 @@
                 </div>
             </div>
 
-            <!-- Search, Sorting & Display Controls (Visible on List Tab) -->
+            <!-- Búsqueda y Ordenamiento -->
             <div id="listControls" class="flex flex-col sm:flex-row items-center justify-between gap-3">
-                <!-- Search Input -->
                 <div class="relative w-full sm:w-72">
                     <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
                     <input type="text" id="searchInput" oninput="handleSearch()" placeholder="Buscar alumno..."
@@ -218,7 +195,6 @@
                 </div>
 
                 <div class="flex items-center space-x-2 w-full sm:w-auto justify-end">
-                    <!-- Sort Selector -->
                     <div class="flex items-center space-x-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl text-xs font-medium">
                         <i class="fa-solid fa-arrow-down-wide-short text-slate-400"></i>
                         <span class="text-slate-500 hidden sm:inline">Ordenar:</span>
@@ -230,7 +206,6 @@
                         </select>
                     </div>
 
-                    <!-- Layout Toggle -->
                     <div class="flex items-center bg-slate-100 p-1 rounded-xl">
                         <button id="viewCardsBtn" onclick="setLayoutView('cards')" class="p-1.5 rounded-lg text-xs text-indigo-600 bg-white shadow-sm" title="Vista tarjetas">
                             <i class="fa-solid fa-grip-vertical"></i>
@@ -241,17 +216,12 @@
                     </div>
                 </div>
             </div>
-
         </section>
 
-        <!-- TAB 1: Student List / Grid View -->
+        <!-- Pestaña 1: Lista de Alumnos -->
         <section id="tabContentList" class="space-y-4">
-            <!-- Student Grid Container -->
-            <div id="studentsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                <!-- Dynamically populated student cards -->
-            </div>
+            <div id="studentsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
 
-            <!-- Student Table Container (Hidden by default) -->
             <div id="studentsTableContainer" class="hidden bg-white rounded-2xl card-shadow border border-slate-100 overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-sm">
@@ -264,14 +234,11 @@
                                 <th class="py-3 px-4 text-center">Ajuste Rápido</th>
                             </tr>
                         </thead>
-                        <tbody id="studentsTableBody" class="divide-y divide-slate-100">
-                            <!-- Dynamically populated table rows -->
-                        </tbody>
+                        <tbody id="studentsTableBody" class="divide-y divide-slate-100"></tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- Empty Search Results Placeholder -->
             <div id="noResults" class="hidden bg-white p-12 rounded-2xl text-center space-y-3 border border-slate-100">
                 <div class="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto text-2xl">
                     <i class="fa-solid fa-user-slash"></i>
@@ -281,17 +248,14 @@
             </div>
         </section>
 
-        <!-- TAB 2: Visual Histogram & Analytics -->
+        <!-- Pestaña 2: Gráficos -->
         <section id="tabContentChart" class="hidden space-y-6">
-            
-            <!-- Histogram Controls Header -->
             <div class="bg-white p-4 rounded-2xl card-shadow border border-slate-100 flex flex-wrap items-center justify-between gap-3">
                 <div>
                     <h2 class="text-lg font-bold text-slate-900">Histograma y Análisis de Lectura</h2>
                     <p class="text-xs text-slate-500">Visualización gráfica de la distribución de lectura en la clase.</p>
                 </div>
 
-                <!-- Palette Selector for Charts -->
                 <div class="flex items-center space-x-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl text-xs">
                     <i class="fa-solid fa-palette text-indigo-500"></i>
                     <span class="font-medium text-slate-600">Paleta de color:</span>
@@ -306,7 +270,6 @@
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- Histogram Chart 1: Distribution Ranges -->
                 <div class="bg-white p-5 rounded-2xl card-shadow border border-slate-100 space-y-3">
                     <div class="flex items-center justify-between">
                         <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
@@ -320,7 +283,6 @@
                     </div>
                 </div>
 
-                <!-- Chart 2: Individual Ranking Horizontal Chart -->
                 <div class="bg-white p-5 rounded-2xl card-shadow border border-slate-100 space-y-3">
                     <div class="flex items-center justify-between">
                         <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
@@ -335,24 +297,18 @@
                 </div>
             </div>
 
-            <!-- Reading Insights Card -->
             <div class="bg-gradient-to-br from-indigo-900 to-slate-900 text-white p-6 rounded-2xl card-shadow space-y-4">
                 <h3 class="text-base font-bold flex items-center gap-2">
                     <i class="fa-solid fa-lightbulb text-amber-400"></i>
                     Diagnóstico de Lectura de la Clase
                 </h3>
-                <div id="classInsightsGrid" class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
-                    <!-- Populated dynamically -->
-                </div>
+                <div id="classInsightsGrid" class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs"></div>
             </div>
-
         </section>
 
-        <!-- TAB 3: Data Management, Import/Export & Tools -->
+        <!-- Pestaña 3: Herramientas -->
         <section id="tabContentTools" class="hidden space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                
-                <!-- Export Section -->
                 <div class="bg-white p-6 rounded-2xl card-shadow border border-slate-100 space-y-4">
                     <div class="flex items-center space-x-3">
                         <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg font-bold">
@@ -368,7 +324,7 @@
                         <button onclick="exportToCSV()" class="w-full flex items-center justify-between p-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-medium text-xs transition border border-emerald-200">
                             <span class="flex items-center gap-2">
                                 <i class="fa-solid fa-file-excel text-emerald-600 text-base"></i>
-                                Exportar Informe CSV (Compatible con Microsoft Excel)
+                                Exportar Informe CSV (Excel)
                             </span>
                             <i class="fa-solid fa-download"></i>
                         </button>
@@ -376,14 +332,13 @@
                         <button onclick="exportToJSON()" class="w-full flex items-center justify-between p-3 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-800 font-medium text-xs transition border border-slate-200">
                             <span class="flex items-center gap-2">
                                 <i class="fa-solid fa-file-code text-indigo-600 text-base"></i>
-                                Exportar Respaldado JSON Completo
+                                Exportar Respaldo JSON Completo
                             </span>
                             <i class="fa-solid fa-download"></i>
                         </button>
                     </div>
                 </div>
 
-                <!-- Import Section -->
                 <div class="bg-white p-6 rounded-2xl card-shadow border border-slate-100 space-y-4">
                     <div class="flex items-center space-x-3">
                         <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg font-bold">
@@ -399,13 +354,12 @@
                         <label class="w-full flex flex-col items-center px-4 py-4 bg-slate-50 text-slate-600 rounded-xl border-2 border-dashed border-slate-200 hover:border-indigo-400 cursor-pointer transition text-xs font-medium">
                             <i class="fa-solid fa-cloud-arrow-up text-2xl text-indigo-500 mb-1"></i>
                             <span>Seleccionar archivo .JSON o .CSV</span>
-                            <span class="text-slate-400 text-[10px] mt-0.5">Se actualizarán los datos de los 24 alumnos</span>
+                            <span class="text-slate-400 text-[10px] mt-0.5">Se actualizarán los datos de los alumnos</span>
                             <input type="file" id="importFileInput" accept=".json, .csv" class="hidden" onchange="handleFileImport(event)">
                         </label>
                     </div>
                 </div>
 
-                <!-- Danger Zone / Class Reset -->
                 <div class="bg-white p-6 rounded-2xl card-shadow border border-red-100 space-y-4 md:col-span-2">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center space-x-3">
@@ -414,7 +368,7 @@
                             </div>
                             <div>
                                 <h3 class="text-base font-bold text-slate-900">Opciones Avanzadas y Reajuste</h3>
-                                <p class="text-xs text-slate-500">Reiniciar recuentos o volver al listado inicial de 24 alumnos</p>
+                                <p class="text-xs text-slate-500">Reiniciar recuentos o volver al listado inicial</p>
                             </div>
                         </div>
 
@@ -426,18 +380,16 @@
 
                             <button onclick="confirmResetToDefault()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition flex items-center gap-1.5">
                                 <i class="fa-solid fa-arrows-rotate"></i>
-                                Restablecer Lista Original (24 Alumnos)
+                                Restablecer Lista Original
                             </button>
                         </div>
                     </div>
                 </div>
-
             </div>
         </section>
-
     </main>
 
-    <!-- Custom Modal Popup -->
+    <!-- Modal Personalizado -->
     <div id="customModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 card-shadow animate-pop border border-slate-100">
             <div class="flex items-center space-x-3">
@@ -464,16 +416,11 @@
         </div>
     </div>
 
-    <!-- Toast Notification Container -->
+    <!-- Contenedor Notificaciones Toast -->
     <div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col space-y-2 pointer-events-none"></div>
 
-    <!-- Firebase Script Setup (ES Module) -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // Global state and default 24 students pre-load
+    <!-- Motor de Sincronización WebRTC P2P (PeerJS) -->
+    <script>
         const DEFAULT_STUDENTS = [
             { id: "1", name: "Beckford Parra, Mateo", books: 0 },
             { id: "2", name: "Beltrán Jiménez, Elba", books: 0 },
@@ -501,140 +448,129 @@
             { id: "24", name: "Zoca Hidalgo, Julieta", books: 0 }
         ];
 
-        window.studentsData = JSON.parse(localStorage.getItem('lecturometro_data')) || [...DEFAULT_STUDENTS];
-        window.currentRoomCode = localStorage.getItem('lecturometro_room') || 'aula-2026';
-        window.classGoal = parseInt(localStorage.getItem('lecturometro_goal')) || 100;
+        // Detección de código de sala desde la URL (?room=aula-2026)
+        const urlParams = new URLSearchParams(window.location.search);
+        const roomFromUrl = urlParams.get('room');
+
+        window.currentRoomCode = roomFromUrl || localStorage.getItem('lecturometro_room') || 'aula-2026';
+        window.studentsData = JSON.parse(localStorage.getItem(`lecturometro_data_${window.currentRoomCode}`)) || [...DEFAULT_STUDENTS];
+        window.classGoal = parseInt(localStorage.getItem(`lecturometro_goal_${window.currentRoomCode}`)) || 100;
         window.activeTab = 'list';
-        window.layoutView = 'cards'; // 'cards' | 'table'
-        window.histogramChartInstance = null;
-        window.rankingChartInstance = null;
+        window.layoutView = 'cards';
 
-        let db = null;
-        let auth = null;
-        let currentUser = null;
-        let unsubscribeRoom = null;
+        let broadcastChannel = null;
+        let peer = null;
+        let activePeerConn = null;
 
-        // Extract Firebase environment parameters
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'lecturometro-app';
-        let firebaseConfig = null;
-        try {
-            if (typeof __firebase_config !== 'undefined' && __firebase_config) {
-                firebaseConfig = JSON.parse(__firebase_config);
-            }
-        } catch (e) {
-            console.error("Firebase config parse error:", e);
+        function sanitizeRoomCode(code) {
+            return (code || 'aula-2026').toLowerCase().trim().replace(/[^a-z0-9_-]/g, '_');
         }
 
-        // Initialize Firebase Authentication & Firestore
-        async function initFirebase() {
-            updateSyncStatus('connecting', 'Conectando...');
-            
-            document.getElementById('roomCodeInput').value = window.currentRoomCode;
+        function initSyncNetwork() {
+            const cleanRoom = sanitizeRoomCode(window.currentRoomCode);
+            document.getElementById('roomCodeInput').value = cleanRoom;
 
-            if (!firebaseConfig) {
-                updateSyncStatus('offline', 'Modo Local (Sin nube)');
-                renderApp();
-                return;
+            // 1. Sincronización rápida entre pestañas del mismo navegador
+            if ('BroadcastChannel' in window) {
+                if (broadcastChannel) broadcastChannel.close();
+                broadcastChannel = new BroadcastChannel(`lecturometro_channel_${cleanRoom}`);
+                broadcastChannel.onmessage = (event) => {
+                    if (event.data && event.data.type === 'SYNC_STATE') {
+                        applyIncomingState(event.data.payload, false);
+                    }
+                };
             }
 
-            try {
-                const app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
+            // 2. Conexión P2P directa entre distintos dispositivos (Móvil, PC, Tablet)
+            if (peer) peer.destroy();
+            updateSyncStatus('connecting', `Conectando P2P (${cleanRoom})...`);
 
-                const initialToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-                if (initialToken) {
-                    const userCred = await signInWithCustomToken(auth, initialToken);
-                    currentUser = userCred.user;
-                } else {
-                    const userCred = await signInAnonymously(auth);
-                    currentUser = userCred.user;
-                }
+            const peerHostId = `lecturometro-room-${cleanRoom}-host`;
+            peer = new Peer(peerHostId);
 
-                if (currentUser) {
-                    subscribeToRoom(window.currentRoomCode);
+            peer.on('open', (id) => {
+                updateSyncStatus('online', `Anfitrión P2P (${cleanRoom})`);
+            });
+
+            // Si el ID ya existe, este dispositivo se conecta como cliente al dispositivo principal
+            peer.on('error', (err) => {
+                if (err.type === 'unavailable-id') {
+                    peer = new Peer();
+                    peer.on('open', () => {
+                        connectToHost(peerHostId);
+                    });
                 } else {
                     updateSyncStatus('offline', 'Modo Local');
-                    renderApp();
                 }
-            } catch (err) {
-                console.warn("Nube inaccesible, pasando a guardado local:", err);
-                updateSyncStatus('offline', 'Modo Local');
-                renderApp();
+            });
+
+            peer.on('connection', (conn) => {
+                conn.on('open', () => {
+                    conn.send({
+                        type: 'SYNC_STATE',
+                        payload: { students: window.studentsData, classGoal: window.classGoal }
+                    });
+                });
+
+                conn.on('data', (data) => {
+                    if (data && data.type === 'SYNC_STATE') {
+                        applyIncomingState(data.payload, false);
+                    }
+                });
+
+                updateSyncStatus('online', `Conectado P2P (${cleanRoom})`);
+            });
+        }
+
+        function connectToHost(hostId) {
+            activePeerConn = peer.connect(hostId);
+            activePeerConn.on('open', () => {
+                updateSyncStatus('online', `Conectado P2P`);
+            });
+
+            activePeerConn.on('data', (data) => {
+                if (data && data.type === 'SYNC_STATE') {
+                    applyIncomingState(data.payload, false);
+                }
+            });
+
+            activePeerConn.on('close', () => {
+                updateSyncStatus('offline', 'Host desconectado');
+            });
+        }
+
+        function applyIncomingState(payload, triggerBroadcast = true) {
+            if (payload.students) window.studentsData = payload.students;
+            if (payload.classGoal) window.classGoal = payload.classGoal;
+            saveLocalBackup();
+            renderApp();
+
+            if (triggerBroadcast) {
+                broadcastStateChange();
             }
         }
 
-        // Subscribe in real-time to Firestore document corresponding to Room Code
-        window.subscribeToRoom = function(roomCode) {
-            if (unsubscribeRoom) {
-                unsubscribeRoom();
-                unsubscribeRoom = null;
-            }
-
-            const cleanRoom = roomCode.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '_') || 'aula-2026';
-            window.currentRoomCode = cleanRoom;
-            localStorage.setItem('lecturometro_room', cleanRoom);
-
-            if (!db || !currentUser) {
-                updateSyncStatus('offline', 'Modo Local');
-                renderApp();
-                return;
-            }
-
-            updateSyncStatus('connecting', `Sincronizando ${cleanRoom}...`);
-
-            // RULE 1 compliant path: /artifacts/{appId}/public/data/classrooms/{roomCode}
-            const roomDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'classrooms', cleanRoom);
-
-            unsubscribeRoom = onSnapshot(roomDocRef, 
-                (docSnap) => {
-                    if (docSnap.exists()) {
-                        const data = docSnap.data();
-                        if (data && Array.isArray(data.students) && data.students.length > 0) {
-                            window.studentsData = data.students;
-                            if (data.classGoal) window.classGoal = data.classGoal;
-                            saveLocalBackup();
-                            renderApp();
-                            updateSyncStatus('online', `Conectado en línea: ${cleanRoom}`);
-                        }
-                    } else {
-                        // Create new room record with 24 default students
-                        window.saveToCloud(window.studentsData, cleanRoom);
-                        updateSyncStatus('online', `Conectado en línea: ${cleanRoom}`);
-                    }
-                },
-                (error) => {
-                    console.error("Error en sincronización en tiempo real:", error);
-                    updateSyncStatus('offline', 'Sin conexión (Local)');
-                    renderApp();
-                }
-            );
-        };
-
-        // Push local changes to Cloud
-        window.saveToCloud = async function(studentsList = window.studentsData, roomCode = window.currentRoomCode) {
+        function broadcastStateChange() {
             saveLocalBackup();
-            if (!db || !currentUser) return;
+            const payload = {
+                students: window.studentsData,
+                classGoal: window.classGoal
+            };
 
-            const cleanRoom = roomCode.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '_') || 'aula-2026';
-            const roomDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'classrooms', cleanRoom);
-
-            try {
-                await setDoc(roomDocRef, {
-                    students: studentsList,
-                    classGoal: window.classGoal,
-                    lastUpdated: new Date().toISOString(),
-                    updatedBy: currentUser.uid
-                }, { merge: true });
-            } catch (err) {
-                console.error("Error guardando en la nube:", err);
-                updateSyncStatus('offline', 'Error guardando en nube');
+            if (broadcastChannel) {
+                broadcastChannel.postMessage({ type: 'SYNC_STATE', payload });
             }
-        };
+
+            if (activePeerConn && activePeerConn.open) {
+                activePeerConn.send({ type: 'SYNC_STATE', payload });
+            }
+        }
 
         function saveLocalBackup() {
-            localStorage.setItem('lecturometro_data', JSON.stringify(window.studentsData));
-            localStorage.setItem('lecturometro_goal', window.classGoal);
+            const cleanRoom = sanitizeRoomCode(window.currentRoomCode);
+            localStorage.setItem(`lecturometro_data_${cleanRoom}`, JSON.stringify(window.studentsData));
+            localStorage.setItem(`lecturometro_goal_${cleanRoom}`, window.classGoal);
+            localStorage.setItem('lecturometro_room', cleanRoom);
         }
 
         function updateSyncStatus(type, message) {
@@ -655,15 +591,14 @@
             }
         }
 
-        // Start initialization on window load
         window.addEventListener('DOMContentLoaded', () => {
-            initFirebase();
+            initSyncNetwork();
+            renderApp();
         });
     </script>
 
-    <!-- Application Logic Script -->
+    <!-- Lógica de Interfaz de Usuario -->
     <script>
-        // Reading level tier visual badges
         function getReadingLevel(books) {
             if (books <= 0) return { title: 'Aprendiz', icon: '🌱', bg: 'bg-slate-100', text: 'text-slate-600', border: 'border-slate-200' };
             if (books <= 3) return { title: 'Lector Inicial', icon: '📖', bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' };
@@ -673,7 +608,6 @@
             return { title: 'Lector Diamante', icon: '💎', bg: 'bg-emerald-50', text: 'text-emerald-800', border: 'border-emerald-300' };
         }
 
-        // Master Render Function
         function renderApp() {
             updateStats();
             renderStudentsList();
@@ -682,7 +616,6 @@
             }
         }
 
-        // Update Top Banner Stats
         function updateStats() {
             const students = window.studentsData || [];
             const totalBooks = students.reduce((sum, s) => sum + (parseInt(s.books) || 0), 0);
@@ -693,13 +626,11 @@
             document.getElementById('statAverageBooks').innerText = avg;
             document.getElementById('statTotalStudents').innerText = totalStudents;
 
-            // Class goal progress calculation
             const goalTarget = window.classGoal || 100;
             document.getElementById('classGoalTarget').innerText = goalTarget;
             const goalPercent = Math.min(100, Math.round((totalBooks / goalTarget) * 100));
             document.getElementById('classGoalProgress').style.width = goalPercent + '%';
 
-            // Top Reader calculation
             if (students.length > 0) {
                 const maxBooks = Math.max(...students.map(s => parseInt(s.books) || 0));
                 if (maxBooks > 0) {
@@ -717,17 +648,14 @@
             }
         }
 
-        // Filter and Sort Students
         function getFilteredAndSortedStudents() {
             let list = [...(window.studentsData || [])];
             
-            // Search filter
             const query = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
             if (query) {
                 list = list.filter(s => s.name.toLowerCase().includes(query));
             }
 
-            // Sort logic
             const sortVal = document.getElementById('sortSelect')?.value || 'surname_asc';
             list.sort((a, b) => {
                 const booksA = parseInt(a.books) || 0;
@@ -748,7 +676,6 @@
             return list;
         }
 
-        // Render Cards / Table View
         function renderStudentsList() {
             const list = getFilteredAndSortedStudents();
             const gridContainer = document.getElementById('studentsGrid');
@@ -773,7 +700,6 @@
                     const books = parseInt(student.books) || 0;
                     const level = getReadingLevel(books);
                     
-                    // Extract initials from student name
                     const nameParts = student.name.split(',');
                     const firstName = nameParts[1] ? nameParts[1].trim() : student.name;
                     const surname = nameParts[0] ? nameParts[0].trim() : '';
@@ -797,7 +723,6 @@
                                 </div>
                             </div>
 
-                            <!-- Interactive Reading Counter -->
                             <div class="bg-slate-50 p-3 rounded-xl flex items-center justify-between border border-slate-100">
                                 <button onclick="adjustBooks('${student.id}', -1)" 
                                     class="w-9 h-9 rounded-lg bg-white shadow-sm border border-slate-200 text-slate-700 font-bold hover:bg-slate-100 active:scale-95 transition flex items-center justify-center text-sm disabled:opacity-40"
@@ -860,7 +785,6 @@
             }
         }
 
-        // Increment or Decrement Books
         function adjustBooks(studentId, delta) {
             const student = window.studentsData.find(s => s.id === studentId);
             if (!student) return;
@@ -869,12 +793,11 @@
             current = Math.max(0, current + delta);
             student.books = current;
 
-            window.saveToCloud();
             renderApp();
+            broadcastStateChange();
             showToast(`${delta > 0 ? '+1' : '-1'} libro para ${student.name.split(',')[1] || student.name}`);
         }
 
-        // Direct numeric edit
         function setBooksDirect(studentId, val) {
             const student = window.studentsData.find(s => s.id === studentId);
             if (!student) return;
@@ -883,12 +806,11 @@
             if (isNaN(newCount) || newCount < 0) newCount = 0;
 
             student.books = newCount;
-            window.saveToCloud();
             renderApp();
+            broadcastStateChange();
             showToast(`Lecturas actualizadas a ${newCount} para ${student.name.split(',')[1] || student.name}`);
         }
 
-        // UI View Layout Toggles
         function setLayoutView(view) {
             window.layoutView = view;
             document.getElementById('viewCardsBtn').className = view === 'cards' 
@@ -900,14 +822,12 @@
             renderStudentsList();
         }
 
-        // Render Charts & Visual Histogram
         function renderCharts() {
             if (typeof Chart === 'undefined') return;
 
             const students = window.studentsData || [];
             const paletteKey = document.getElementById('paletteSelect')?.value || 'indigo';
 
-            // Color Palettes Definition
             const palettes = {
                 indigo: ['#6366f1', '#4f46e5', '#4338ca', '#3730a3', '#312e81'],
                 emerald: ['#10b981', '#059669', '#047857', '#065f46', '#064e3b'],
@@ -917,8 +837,6 @@
             };
             const currentColors = palettes[paletteKey] || palettes.indigo;
 
-            // Chart 1: Histogram Ranges
-            // Ranges: 0 books, 1-3 books, 4-7 books, 8-12 books, 13+ books
             const rangeCounts = [0, 0, 0, 0, 0];
             students.forEach(s => {
                 const b = parseInt(s.books) || 0;
@@ -948,30 +866,15 @@
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false },
-                            tooltip: {
-                                callbacks: {
-                                    label: (ctx) => `${ctx.raw} alumno(s)`
-                                }
-                            }
-                        },
+                        plugins: { legend: { display: false } },
                         scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: { stepSize: 1, font: { family: 'Inter', size: 11 } },
-                                grid: { color: '#f1f5f9' }
-                            },
-                            x: {
-                                ticks: { font: { family: 'Inter', size: 11, weight: '600' } },
-                                grid: { display: false }
-                            }
+                            y: { beginAtZero: true, ticks: { stepSize: 1 } },
+                            x: { grid: { display: false } }
                         }
                     }
                 });
             }
 
-            // Chart 2: Student Ranking Horizontal Bar Chart
             const sortedByBooks = [...students].sort((a, b) => (parseInt(b.books) || 0) - (parseInt(a.books) || 0));
             const labels = sortedByBooks.map(s => {
                 const parts = s.name.split(',');
@@ -998,25 +901,15 @@
                         indexAxis: 'y',
                         responsive: true,
                         maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false }
-                        },
+                        plugins: { legend: { display: false } },
                         scales: {
-                            x: {
-                                beginAtZero: true,
-                                ticks: { stepSize: 1, font: { family: 'Inter', size: 10 } },
-                                grid: { color: '#f1f5f9' }
-                            },
-                            y: {
-                                ticks: { font: { family: 'Inter', size: 10 } },
-                                grid: { display: false }
-                            }
+                            x: { beginAtZero: true, ticks: { stepSize: 1 } },
+                            y: { grid: { display: false } }
                         }
                     }
                 });
             }
 
-            // Diagnostic Class Insights Text
             const total = students.length;
             const readers3Plus = students.filter(s => (parseInt(s.books) || 0) >= 3).length;
             const percent3Plus = total > 0 ? Math.round((readers3Plus / total) * 100) : 0;
@@ -1038,7 +931,6 @@
             `;
         }
 
-        // Tab Switcher
         function switchTab(tab) {
             window.activeTab = tab;
             const btnList = document.getElementById('tabBtnList');
@@ -1050,7 +942,6 @@
             const contentTools = document.getElementById('tabContentTools');
             const listControls = document.getElementById('listControls');
 
-            // Reset tab button styles
             [btnList, btnChart, btnTools].forEach(btn => {
                 btn.className = "px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 text-slate-600 hover:text-slate-900";
             });
@@ -1075,20 +966,19 @@
             }
         }
 
-        // Room Code Change Handler
         function changeRoomCode() {
             const newCode = document.getElementById('roomCodeInput').value;
             if (!newCode.trim()) {
-                showToast("Por favor ingresa un código de sala válido", "error");
+                showToast("Ingresa un código de sala válido", "warning");
                 return;
             }
-            if (window.subscribeToRoom) {
-                window.subscribeToRoom(newCode);
-                showToast(`Te has unido a la sala: ${newCode.trim()}`);
-            }
+            window.currentRoomCode = newCode;
+            window.studentsData = JSON.parse(localStorage.getItem(`lecturometro_data_${sanitizeRoomCode(newCode)}`)) || [...DEFAULT_STUDENTS];
+            initSyncNetwork();
+            renderApp();
+            showToast(`Unido a la sala: ${newCode.trim()}`);
         }
 
-        // Search Handlers
         function handleSearch() {
             const input = document.getElementById('searchInput');
             const clearBtn = document.getElementById('clearSearchBtn');
@@ -1111,12 +1001,9 @@
             renderStudentsList();
         }
 
-        // Export Data as CSV (Compatible with Excel)
         function exportToCSV() {
             const students = window.studentsData || [];
-            let csvContent = "\uFEFF"; // UTF-8 BOM for Excel Spanish accents
-            csvContent += "ID;Apellidos y Nombre;Libros Leidos;Nivel\n";
-
+            let csvContent = "\uFEFFID;Apellidos y Nombre;Libros Leidos;Nivel\n";
             students.forEach(s => {
                 const books = parseInt(s.books) || 0;
                 const level = getReadingLevel(books).title;
@@ -1131,11 +1018,9 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-
-            showToast("Informe CSV descargado con éxito");
+            showToast("Informe CSV descargado");
         }
 
-        // Export Data as JSON
         function exportToJSON() {
             const payload = {
                 roomCode: window.currentRoomCode,
@@ -1143,7 +1028,6 @@
                 exportDate: new Date().toISOString(),
                 students: window.studentsData
             };
-
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(payload, null, 2));
             const downloadAnchor = document.createElement('a');
             downloadAnchor.setAttribute("href", dataStr);
@@ -1151,11 +1035,9 @@
             document.body.appendChild(downloadAnchor);
             downloadAnchor.click();
             downloadAnchor.remove();
-
-            showToast("Respaldo JSON descargado con éxito");
+            showToast("Respaldo JSON descargado");
         }
 
-        // Import File Handler (.JSON or .CSV)
         function handleFileImport(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -1169,57 +1051,28 @@
                         if (parsed && Array.isArray(parsed.students)) {
                             window.studentsData = parsed.students;
                             if (parsed.classGoal) window.classGoal = parsed.classGoal;
-                            window.saveToCloud();
+                            broadcastStateChange();
                             renderApp();
-                            showToast("Datos importados con éxito desde JSON");
-                        } else {
-                            throw new Error("Formato JSON inválido");
-                        }
-                    } else if (file.name.endsWith('.csv')) {
-                        const lines = content.split('\n');
-                        const importedStudents = [];
-                        let idCounter = 1;
-
-                        for (let i = 1; i < lines.length; i++) {
-                            const line = lines[i].trim();
-                            if (!line) continue;
-                            const parts = line.split(';');
-                            if (parts.length >= 2) {
-                                const name = parts[1].replace(/"/g, '').trim();
-                                const books = parseInt(parts[2]?.replace(/"/g, '')) || 0;
-                                if (name) {
-                                    importedStudents.push({ id: String(idCounter++), name, books });
-                                }
-                            }
-                        }
-
-                        if (importedStudents.length > 0) {
-                            window.studentsData = importedStudents;
-                            window.saveToCloud();
-                            renderApp();
-                            showToast(`Se cargaron ${importedStudents.length} alumnos desde CSV`);
-                        } else {
-                            throw new Error("No se encontraron registros en el CSV");
+                            showToast("Datos importados correctamente");
                         }
                     }
                 } catch (err) {
                     showModal({
                         title: "Error de Importación",
-                        body: "El archivo no tiene el formato correcto. Asegúrate de subir un archivo JSON o CSV válido.",
+                        body: "El archivo no tiene el formato correcto.",
                         icon: "fa-triangle-exclamation text-red-500",
                         showCancel: false
                     });
                 }
             };
             reader.readAsText(file);
-            event.target.value = ''; // Reset file input
+            event.target.value = '';
         }
 
-        // Edit Class Goal Modal Prompt
         function promptEditClassGoal() {
             showModal({
-                title: "Establecer Meta de Lectura de la Clase",
-                body: "Indica el objetivo total de libros a leer entre todos los alumnos:",
+                title: "Establecer Meta de Lectura",
+                body: "Objetivo total de libros para la clase:",
                 icon: "fa-bullseye text-indigo-600",
                 showInput: true,
                 inputValue: window.classGoal,
@@ -1227,82 +1080,52 @@
                     const newGoal = parseInt(val);
                     if (!isNaN(newGoal) && newGoal > 0) {
                         window.classGoal = newGoal;
-                        window.saveToCloud();
+                        broadcastStateChange();
                         renderApp();
-                        showToast(`Meta de clase actualizada a ${newGoal} libros`);
+                        showToast(`Meta actualizada a ${newGoal} libros`);
                     }
                 }
             });
         }
 
-        // Reset Counters Confirmation
         function confirmResetCounts() {
             showModal({
-                title: "¿Poner todos los contadores a 0?",
-                body: "Esta acción reiniciará a cero los libros leídos de todos los alumnos de la sala actual. ¿Deseas continuar?",
+                title: "¿Poner contadores a 0?",
+                body: "Esta acción reiniciará a cero los libros de todos los alumnos.",
                 icon: "fa-rotate-left text-red-500",
                 onConfirm: () => {
                     window.studentsData.forEach(s => s.books = 0);
-                    window.saveToCloud();
+                    broadcastStateChange();
                     renderApp();
-                    showToast("Todos los contadores han sido puestos a 0");
+                    showToast("Contadores puestos a 0");
                 }
             });
         }
 
-        // Reset to Default 24 Students Confirmation
         function confirmResetToDefault() {
             showModal({
                 title: "¿Restablecer listado original?",
-                body: "Se cargará nuevamente la lista exacta de 24 alumnos predeterminada con sus contadores a 0. Se sobrescribirá el listado actual.",
+                body: "Se restablecerán los 24 alumnos iniciales con sus contadores a cero.",
                 icon: "fa-arrows-rotate text-amber-500",
                 onConfirm: () => {
-                    const DEFAULT_LIST = [
-                        { id: "1", name: "Beckford Parra, Mateo", books: 0 },
-                        { id: "2", name: "Beltrán Jiménez, Elba", books: 0 },
-                        { id: "3", name: "Cáceres Pesántez, Mía", books: 0 },
-                        { id: "4", name: "Díaz Martínez, María", books: 0 },
-                        { id: "5", name: "Esteban Garrido, Antonio", books: 0 },
-                        { id: "6", name: "Expósito Vena, Ángela", books: 0 },
-                        { id: "7", name: "Gallego de Francisco, Fabio", books: 0 },
-                        { id: "8", name: "Hidalgo Torres, Diego", books: 0 },
-                        { id: "9", name: "Higueras Fernández, Leo", books: 0 },
-                        { id: "10", name: "Jiménez Cordero, Ángel", books: 0 },
-                        { id: "11", name: "Jiménez Montoro, Álvaro", books: 0 },
-                        { id: "12", name: "Lendínez Valderas, Malena", books: 0 },
-                        { id: "13", name: "Martínez Rodríguez, Luis", books: 0 },
-                        { id: "14", name: "Mengíbar Calero, Lucas", books: 0 },
-                        { id: "15", name: "Mesa Lijarcio, Álvaro", books: 0 },
-                        { id: "16", name: "Mesa Montoro, Fátima", books: 0 },
-                        { id: "17", name: "Molina Porras, Paula", books: 0 },
-                        { id: "18", name: "Molina Vílchez, Daniela", books: 0 },
-                        { id: "19", name: "Rentero López, Laura", books: 0 },
-                        { id: "20", name: "Romero Romera, Mario", books: 0 },
-                        { id: "21", name: "Sánchez Ortigoso, Hugo", books: 0 },
-                        { id: "22", name: "Serrano Rojas, Paula", books: 0 },
-                        { id: "23", name: "Torres Montes, José Carlos", books: 0 },
-                        { id: "24", name: "Zoca Hidalgo, Julieta", books: 0 }
-                    ];
-                    window.studentsData = DEFAULT_LIST;
-                    window.saveToCloud();
+                    window.studentsData = [...DEFAULT_STUDENTS];
+                    broadcastStateChange();
                     renderApp();
-                    showToast("Lista inicial de 24 alumnos restaurada");
+                    showToast("Lista original restaurada");
                 }
             });
         }
 
-        // Copy Room Code / Link to Clipboard
         function copyRoomLink() {
-            const tempInput = document.createElement('input');
-            tempInput.value = window.currentRoomCode;
-            document.body.appendChild(tempInput);
-            tempInput.select();
-            document.execCommand('copy');
-            document.body.removeChild(tempInput);
-            showToast(`Código de sala "${window.currentRoomCode}" copiado al portapapeles`);
+            const cleanRoom = sanitizeRoomCode(window.currentRoomCode);
+            const shareUrl = `${window.location.origin}${window.location.pathname}?room=${cleanRoom}`;
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                showToast(`Enlace de la sala "${cleanRoom}" copiado`);
+            }).catch(() => {
+                showToast("Código de sala: " + cleanRoom);
+            });
         }
 
-        // Modal System
         let modalConfirmCallback = null;
 
         function showModal({ title, body, icon = "fa-circle-info", showInput = false, inputValue = "", showCancel = true, onConfirm = null }) {
@@ -1322,11 +1145,7 @@
             }
 
             const cancelBtn = document.getElementById('modalCancelBtn');
-            if (showCancel) {
-                cancelBtn.classList.remove('hidden');
-            } else {
-                cancelBtn.classList.add('hidden');
-            }
+            cancelBtn.classList.toggle('hidden', !showCancel);
 
             modalConfirmCallback = onConfirm;
             
@@ -1346,7 +1165,6 @@
             modalConfirmCallback = null;
         }
 
-        // Toast Notification Helper
         function showToast(msg, type = "info") {
             const container = document.getElementById('toastContainer');
             if (!container) return;
