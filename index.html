@@ -5,12 +5,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lecturómetro de Clase - Registro y Histograma</title>
 
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Chart.js para Histograma y Ranking -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        brand: {
+                            50: '#f0f3ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
 
     <style>
         ::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -27,6 +53,7 @@
 </head>
 <body class="font-sans antialiased h-full text-slate-800 flex flex-col min-h-screen">
 
+    <!-- Header / Barra Superior -->
     <header class="bg-indigo-900 text-white shadow-lg sticky top-0 z-30">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex flex-col md:flex-row items-center justify-between py-3 gap-3">
@@ -65,7 +92,10 @@
         </div>
     </header>
 
+    <!-- Contenido Principal -->
     <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <!-- Banner de Estadísticas -->
         <section class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="bg-white p-4 rounded-2xl card-shadow border border-slate-100 flex items-center space-x-4">
                 <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl shrink-0"><i class="fa-solid fa-books"></i></div>
@@ -85,6 +115,7 @@
             </div>
         </section>
 
+        <!-- Pestañas y Búsqueda -->
         <section class="bg-white p-4 rounded-2xl card-shadow border border-slate-100 space-y-4">
             <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
                 <div class="flex items-center space-x-2 bg-slate-100 p-1 rounded-xl">
@@ -124,6 +155,7 @@
             </div>
         </section>
 
+        <!-- Pestaña 1: Lista -->
         <section id="tabContentList" class="space-y-4">
             <div id="studentsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
             <div id="studentsTableContainer" class="hidden bg-white rounded-2xl card-shadow border border-slate-100 overflow-hidden">
@@ -142,9 +174,13 @@
             </div>
         </section>
 
+        <!-- Pestaña 2: Gráficos -->
         <section id="tabContentChart" class="hidden space-y-6">
             <div class="bg-white p-4 rounded-2xl card-shadow border border-slate-100 flex flex-wrap items-center justify-between gap-3">
-                <div><h2 class="text-lg font-bold text-slate-900">Histograma y Análisis de Lectura</h2></div>
+                <div>
+                    <h2 class="text-lg font-bold text-slate-900">Histograma y Análisis de Lectura</h2>
+                    <p class="text-xs text-slate-500">Visualización gráfica de la distribución de lectura en la clase.</p>
+                </div>
                 <div class="flex items-center space-x-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl text-xs">
                     <i class="fa-solid fa-palette text-indigo-500"></i>
                     <select id="paletteSelect" onchange="renderCharts()" class="bg-transparent font-bold text-slate-800 focus:outline-none">
@@ -159,16 +195,22 @@
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div class="bg-white p-5 rounded-2xl card-shadow border border-slate-100 space-y-3">
-                    <h3 class="text-sm font-bold text-slate-800"><i class="fa-solid fa-chart-simple text-indigo-600 mr-2"></i>Histograma de Rangos</h3>
+                    <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-chart-simple text-indigo-600"></i>Histograma de Rangos</h3>
                     <div class="relative h-64 w-full"><canvas id="histogramChart"></canvas></div>
                 </div>
                 <div class="bg-white p-5 rounded-2xl card-shadow border border-slate-100 space-y-3">
-                    <h3 class="text-sm font-bold text-slate-800"><i class="fa-solid fa-ranking-star text-amber-500 mr-2"></i>Ranking Comparativo</h3>
+                    <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-ranking-star text-amber-500"></i>Ranking Comparativo</h3>
                     <div class="relative h-64 w-full"><canvas id="rankingChart"></canvas></div>
                 </div>
             </div>
+
+            <div class="bg-gradient-to-br from-indigo-900 to-slate-900 text-white p-6 rounded-2xl card-shadow space-y-4">
+                <h3 class="text-base font-bold flex items-center gap-2"><i class="fa-solid fa-lightbulb text-amber-400"></i>Diagnóstico de Lectura de la Clase</h3>
+                <div id="classInsightsGrid" class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs"></div>
+            </div>
         </section>
 
+        <!-- Pestaña 3: Importar/Exportar -->
         <section id="tabContentTools" class="hidden space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="bg-white p-6 rounded-2xl card-shadow border border-slate-100 space-y-4">
@@ -184,10 +226,37 @@
                         <input type="file" id="importFileInput" accept=".json, .csv" class="hidden" onchange="handleFileImport(event)">
                     </label>
                 </div>
+                <div class="bg-white p-6 rounded-2xl card-shadow border border-red-100 space-y-4 md:col-span-2">
+                    <div class="flex items-center justify-between">
+                        <div><h3 class="text-base font-bold text-slate-900">Opciones Avanzadas</h3><p class="text-xs text-slate-500">Resetear datos</p></div>
+                        <div class="flex gap-2">
+                            <button onclick="confirmResetCounts()" class="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-bold rounded-xl border border-red-200">Poner contadores a 0</button>
+                            <button onclick="confirmResetToDefault()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl">Restablecer Lista Original</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
+
     </main>
 
+    <!-- Modal Popup -->
+    <div id="customModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 card-shadow animate-pop border border-slate-100">
+            <div class="flex items-center space-x-3">
+                <div id="modalIconContainer" class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl shrink-0"><i id="modalIcon" class="fa-solid fa-circle-info"></i></div>
+                <h3 id="modalTitle" class="text-base font-bold text-slate-900">Modal</h3>
+            </div>
+            <p id="modalBody" class="text-xs text-slate-600 leading-relaxed"></p>
+            <div id="modalInputContainer" class="hidden"><input type="number" id="modalInput" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500"></div>
+            <div class="flex items-center justify-end space-x-2 pt-2">
+                <button id="modalCancelBtn" onclick="closeModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl">Cancelar</button>
+                <button id="modalConfirmBtn" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl">Aceptar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenedor Toasts -->
     <div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col space-y-2 pointer-events-none"></div>
 
     <!-- Script de Firebase Firestore -->
@@ -196,7 +265,7 @@
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         // === PEGA AQUÍ TUS CREDENCIALES DE FIREBASE ===
-       const firebaseConfig = {
+        const firebaseConfig = {
       apiKey: "AIzaSyAYYcymoGpOwym3zg4f__sVDYtGpzT6MfQ",
       authDomain: "termometro-lectura.firebaseapp.com",
       databaseURL: "https://termometro-lectura-default-rtdb.europe-west1.firebasedatabase.app",
@@ -240,6 +309,10 @@
         window.currentRoomCode = urlParams.get('room') || localStorage.getItem('lecturometro_room') || 'aula-2026';
         window.studentsData = [...DEFAULT_STUDENTS];
         window.classGoal = 100;
+        window.activeTab = 'list';
+        window.layoutView = 'cards';
+        window.histogramChartInstance = null;
+        window.rankingChartInstance = null;
 
         let unsubscribe = null;
 
@@ -280,6 +353,7 @@
         function updateSyncBadge(type, text) {
             const badge = document.getElementById('syncBadge');
             const label = document.getElementById('syncStatusText');
+            if (!badge || !label) return;
             label.innerText = text;
             if (type === 'online') {
                 badge.className = "flex items-center px-3 py-1 rounded-lg text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
@@ -296,10 +370,23 @@
         });
     </script>
 
+    <!-- Script de Funciones de Interfaz -->
     <script>
+        function getReadingLevel(books) {
+            if (books <= 0) return { title: 'Aprendiz', icon: '🌱', bg: 'bg-slate-100', text: 'text-slate-600', border: 'border-slate-200' };
+            if (books <= 3) return { title: 'Lector Inicial', icon: '📖', bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' };
+            if (books <= 7) return { title: 'Lector Bronce', icon: '🥉', bg: 'bg-amber-50', text: 'text-amber-800', border: 'border-amber-200' };
+            if (books <= 11) return { title: 'Lector Plata', icon: '🥈', bg: 'bg-slate-100', text: 'text-slate-800', border: 'border-slate-300' };
+            if (books <= 15) return { title: 'Lector Oro', icon: '🥇', bg: 'bg-yellow-50', text: 'text-yellow-800', border: 'border-yellow-300' };
+            return { title: 'Lector Diamante', icon: '💎', bg: 'bg-emerald-50', text: 'text-emerald-800', border: 'border-emerald-300' };
+        }
+
         function renderApp() {
             updateStats();
             renderStudentsList();
+            if (window.activeTab === 'chart') {
+                renderCharts();
+            }
         }
 
         function updateStats() {
@@ -311,26 +398,139 @@
             document.getElementById('statTotalBooks').innerText = totalBooks;
             document.getElementById('statAverageBooks').innerText = avg;
             document.getElementById('statTotalStudents').innerText = totalStudents;
-            document.getElementById('classGoalTarget').innerText = window.classGoal || 100;
-            const goalPercent = Math.min(100, Math.round((totalBooks / (window.classGoal || 100)) * 100));
+
+            const goalTarget = window.classGoal || 100;
+            document.getElementById('classGoalTarget').innerText = goalTarget;
+            const goalPercent = Math.min(100, Math.round((totalBooks / goalTarget) * 100));
             document.getElementById('classGoalProgress').style.width = goalPercent + '%';
+
+            if (students.length > 0) {
+                const maxBooks = Math.max(...students.map(s => parseInt(s.books) || 0));
+                if (maxBooks > 0) {
+                    const topReaders = students.filter(s => parseInt(s.books) === maxBooks);
+                    document.getElementById('statTopReader').innerText = topReaders.length === 1 ? topReaders[0].name : `${topReaders.length} Empatados`;
+                    document.getElementById('statTopReaderCount').innerText = `${maxBooks} libro${maxBooks > 1 ? 's' : ''}`;
+                } else {
+                    document.getElementById('statTopReader').innerText = 'Ninguno';
+                    document.getElementById('statTopReaderCount').innerText = '0 libros';
+                }
+            }
+        }
+
+        function getFilteredAndSortedStudents() {
+            let list = [...(window.studentsData || [])];
+            const query = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
+            if (query) list = list.filter(s => s.name.toLowerCase().includes(query));
+
+            const sortVal = document.getElementById('sortSelect')?.value || 'surname_asc';
+            list.sort((a, b) => {
+                const booksA = parseInt(a.books) || 0;
+                const booksB = parseInt(b.books) || 0;
+                if (sortVal === 'surname_asc') return a.name.localeCompare(b.name, 'es');
+                if (sortVal === 'surname_desc') return b.name.localeCompare(a.name, 'es');
+                if (sortVal === 'books_desc') return booksB - booksA || a.name.localeCompare(b.name, 'es');
+                if (sortVal === 'books_asc') return booksA - booksB || a.name.localeCompare(b.name, 'es');
+                return 0;
+            });
+            return list;
         }
 
         function renderStudentsList() {
+            const list = getFilteredAndSortedStudents();
             const gridContainer = document.getElementById('studentsGrid');
-            gridContainer.innerHTML = window.studentsData.map(student => {
-                const books = parseInt(student.books) || 0;
-                return `
-                    <div class="bg-white rounded-2xl p-4 card-shadow border border-slate-100 flex flex-col justify-between space-y-3">
-                        <h4 class="text-xs font-bold text-slate-900">${student.name}</h4>
-                        <div class="bg-slate-50 p-3 rounded-xl flex items-center justify-between">
-                            <button onclick="adjustBooks('${student.id}', -1)" class="w-8 h-8 bg-white border border-slate-200 rounded-lg font-bold">-</button>
-                            <span class="font-extrabold text-lg text-indigo-900">${books}</span>
-                            <button onclick="adjustBooks('${student.id}', 1)" class="w-8 h-8 bg-indigo-600 text-white rounded-lg font-bold">+</button>
+            const tableContainer = document.getElementById('studentsTableContainer');
+            const tableBody = document.getElementById('studentsTableBody');
+            const noResults = document.getElementById('noResults');
+
+            if (list.length === 0) {
+                gridContainer.classList.add('hidden');
+                tableContainer.classList.add('hidden');
+                noResults.classList.remove('hidden');
+                return;
+            }
+
+            noResults.classList.add('hidden');
+
+            if (window.layoutView === 'cards') {
+                gridContainer.classList.remove('hidden');
+                tableContainer.classList.add('hidden');
+
+                gridContainer.innerHTML = list.map(student => {
+                    const books = parseInt(student.books) || 0;
+                    const level = getReadingLevel(books);
+                    const nameParts = student.name.split(',');
+                    const firstName = nameParts[1] ? nameParts[1].trim() : student.name;
+                    const surname = nameParts[0] ? nameParts[0].trim() : '';
+                    const initials = (surname.charAt(0) + (firstName.charAt(0) || '')).toUpperCase();
+
+                    return `
+                        <div class="bg-white rounded-2xl p-4 card-shadow border border-slate-100 hover:border-indigo-200 transition space-y-3 flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-start justify-between gap-2">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-700 font-bold text-xs flex items-center justify-center shrink-0 border border-indigo-200">
+                                            ${initials}
+                                        </div>
+                                        <div>
+                                            <h4 class="text-xs font-bold text-slate-900 leading-tight">${student.name}</h4>
+                                            <span class="inline-flex items-center px-2 py-0.5 mt-1 rounded-md text-[10px] font-semibold ${level.bg} ${level.text} border ${level.border}">
+                                                ${level.icon} ${level.title}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-slate-50 p-3 rounded-xl flex items-center justify-between border border-slate-100">
+                                <button onclick="adjustBooks('${student.id}', -1)" 
+                                    class="w-9 h-9 rounded-lg bg-white shadow-sm border border-slate-200 text-slate-700 font-bold hover:bg-slate-100 active:scale-95 transition flex items-center justify-center text-sm disabled:opacity-40"
+                                    ${books <= 0 ? 'disabled' : ''}>
+                                    <i class="fa-solid fa-minus"></i>
+                                </button>
+
+                                <div class="text-center px-2">
+                                    <input type="number" min="0" value="${books}" 
+                                        onchange="setBooksDirect('${student.id}', this.value)"
+                                        class="w-14 text-center font-extrabold text-xl bg-transparent text-indigo-900 focus:outline-none focus:ring-1 focus:ring-indigo-400 rounded">
+                                    <span class="block text-[10px] font-medium text-slate-400 uppercase tracking-wide">Libros</span>
+                                </div>
+
+                                <button onclick="adjustBooks('${student.id}', 1)" 
+                                    class="w-9 h-9 rounded-lg bg-indigo-600 shadow-sm text-white font-bold hover:bg-indigo-700 active:scale-95 transition flex items-center justify-center text-sm">
+                                    <i class="fa-solid fa-plus"></i>
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                `;
-            }).join('');
+                    `;
+                }).join('');
+            } else {
+                gridContainer.classList.add('hidden');
+                tableContainer.classList.remove('hidden');
+
+                tableBody.innerHTML = list.map((student, idx) => {
+                    const books = parseInt(student.books) || 0;
+                    const level = getReadingLevel(books);
+
+                    return `
+                        <tr class="hover:bg-slate-50/80 transition">
+                            <td class="py-3 px-4 font-mono text-xs text-slate-400">${idx + 1}</td>
+                            <td class="py-3 px-4 font-bold text-slate-800 text-xs">${student.name}</td>
+                            <td class="py-3 px-4 text-center">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold ${level.bg} ${level.text} border ${level.border}">
+                                    ${level.icon} ${level.title}
+                                </span>
+                            </td>
+                            <td class="py-3 px-4 text-center font-extrabold text-indigo-900 text-base">${books}</td>
+                            <td class="py-3 px-4 text-center">
+                                <div class="inline-flex items-center space-x-1">
+                                    <button onclick="adjustBooks('${student.id}', -1)" ${books <= 0 ? 'disabled' : ''} class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-xs font-bold disabled:opacity-40">-1</button>
+                                    <button onclick="adjustBooks('${student.id}', 1)" class="px-2 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-xs font-bold">+1</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
         }
 
         function adjustBooks(studentId, delta) {
@@ -338,24 +538,234 @@
             if (!student) return;
             student.books = Math.max(0, (parseInt(student.books) || 0) + delta);
             renderApp();
-            window.saveToFirestore();
+            if (window.saveToFirestore) window.saveToFirestore();
+            showToast(`${delta > 0 ? '+1' : '-1'} libro para ${student.name.split(',')[1] || student.name}`);
+        }
+
+        function setBooksDirect(studentId, val) {
+            const student = window.studentsData.find(s => s.id === studentId);
+            if (!student) return;
+            student.books = Math.max(0, parseInt(val) || 0);
+            renderApp();
+            if (window.saveToFirestore) window.saveToFirestore();
+        }
+
+        function setLayoutView(view) {
+            window.layoutView = view;
+            document.getElementById('viewCardsBtn').className = view === 'cards' ? 'p-1.5 rounded-lg text-xs text-indigo-600 bg-white shadow-sm' : 'p-1.5 rounded-lg text-xs text-slate-500 hover:text-slate-800';
+            document.getElementById('viewTableBtn').className = view === 'table' ? 'p-1.5 rounded-lg text-xs text-indigo-600 bg-white shadow-sm' : 'p-1.5 rounded-lg text-xs text-slate-500 hover:text-slate-800';
+            renderStudentsList();
+        }
+
+        function renderCharts() {
+            if (typeof Chart === 'undefined') return;
+
+            const students = window.studentsData || [];
+            const paletteKey = document.getElementById('paletteSelect')?.value || 'indigo';
+
+            const palettes = {
+                indigo: ['#6366f1', '#4f46e5', '#4338ca', '#3730a3', '#312e81'],
+                emerald: ['#10b981', '#059669', '#047857', '#065f46', '#064e3b'],
+                sunset: ['#f59e0b', '#f97316', '#ef4444', '#dc2626', '#b91c1c'],
+                ocean: ['#06b6d4', '#0284c7', '#2563eb', '#1d4ed8', '#1e40af'],
+                neon: ['#ec4899', '#8b5cf6', '#3b82f6', '#10b981', '#f59e0b']
+            };
+            const currentColors = palettes[paletteKey] || palettes.indigo;
+
+            const rangeCounts = [0, 0, 0, 0, 0];
+            students.forEach(s => {
+                const b = parseInt(s.books) || 0;
+                if (b === 0) rangeCounts[0]++;
+                else if (b <= 3) rangeCounts[1]++;
+                else if (b <= 7) rangeCounts[2]++;
+                else if (b <= 12) rangeCounts[3]++;
+                else rangeCounts[4]++;
+            });
+
+            const histCtx = document.getElementById('histogramChart')?.getContext('2d');
+            if (histCtx) {
+                if (window.histogramChartInstance) window.histogramChartInstance.destroy();
+                window.histogramChartInstance = new Chart(histCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['0 Libros', '1-3 Libros', '4-7 Libros', '8-12 Libros', '13+ Libros'],
+                        datasets: [{ label: 'Nº Alumnos', data: rangeCounts, backgroundColor: currentColors, borderRadius: 8 }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+                });
+            }
+
+            const sortedByBooks = [...students].sort((a, b) => (parseInt(b.books) || 0) - (parseInt(a.books) || 0));
+            const labels = sortedByBooks.map(s => {
+                const parts = s.name.split(',');
+                return parts[1] ? `${parts[1].trim()} ${parts[0].charAt(0)}.` : s.name;
+            });
+            const dataBooks = sortedByBooks.map(s => parseInt(s.books) || 0);
+
+            const rankCtx = document.getElementById('rankingChart')?.getContext('2d');
+            if (rankCtx) {
+                if (window.rankingChartInstance) window.rankingChartInstance.destroy();
+                window.rankingChartInstance = new Chart(rankCtx, {
+                    type: 'bar',
+                    data: { labels: labels, datasets: [{ label: 'Libros Leídos', data: dataBooks, backgroundColor: currentColors[0], borderRadius: 6 }] },
+                    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+                });
+            }
+
+            const total = students.length;
+            const readers3Plus = students.filter(s => (parseInt(s.books) || 0) >= 3).length;
+            const percent3Plus = total > 0 ? Math.round((readers3Plus / total) * 100) : 0;
+
+            document.getElementById('classInsightsGrid').innerHTML = `
+                <div class="bg-white/10 p-3 rounded-xl backdrop-blur-sm">
+                    <span class="text-amber-300 font-bold block text-sm">${percent3Plus}% de la Clase</span>
+                    <span>Ha leído 3 o más libros esta temporada</span>
+                </div>
+                <div class="bg-white/10 p-3 rounded-xl backdrop-blur-sm">
+                    <span class="text-indigo-300 font-bold block text-sm">${rangeCounts[0]} Alumnos</span>
+                    <span>Aún no han registrado su primer libro</span>
+                </div>
+                <div class="bg-white/10 p-3 rounded-xl backdrop-blur-sm">
+                    <span class="text-emerald-300 font-bold block text-sm">${rangeCounts[4]} Lectores Diamante</span>
+                    <span>Han superado el umbral de 13 libros</span>
+                </div>
+            `;
+        }
+
+        function switchTab(tab) {
+            window.activeTab = tab;
+            const btnList = document.getElementById('tabBtnList');
+            const btnChart = document.getElementById('tabBtnChart');
+            const btnTools = document.getElementById('tabBtnTools');
+
+            [btnList, btnChart, btnTools].forEach(b => b.className = "px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 text-slate-600 hover:text-slate-900");
+            document.getElementById('tabContentList').classList.add('hidden');
+            document.getElementById('tabContentChart').classList.add('hidden');
+            document.getElementById('tabContentTools').classList.add('hidden');
+
+            if (tab === 'list') {
+                btnList.className = "px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 bg-white text-indigo-600 shadow-sm";
+                document.getElementById('tabContentList').classList.remove('hidden');
+                document.getElementById('listControls').classList.remove('hidden');
+            } else if (tab === 'chart') {
+                btnChart.className = "px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 bg-white text-indigo-600 shadow-sm";
+                document.getElementById('tabContentChart').classList.remove('hidden');
+                document.getElementById('listControls').classList.add('hidden');
+                renderCharts();
+            } else if (tab === 'tools') {
+                btnTools.className = "px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 bg-white text-indigo-600 shadow-sm";
+                document.getElementById('tabContentTools').classList.remove('hidden');
+                document.getElementById('listControls').classList.add('hidden');
+            }
         }
 
         function changeRoomCode() {
             const code = document.getElementById('roomCodeInput').value;
-            if (code) window.initFirestoreSync(code);
+            if (code && window.initFirestoreSync) window.initFirestoreSync(code);
         }
 
         function copyRoomLink() {
             const url = `${window.location.origin}${window.location.pathname}?room=${window.currentRoomCode}`;
             navigator.clipboard.writeText(url);
-            alert("Enlace copiado al portapapeles: " + url);
+            showToast("Enlace copiado al portapapeles");
         }
 
-        function switchTab(tab) {
-            document.getElementById('tabContentList').classList.toggle('hidden', tab !== 'list');
-            document.getElementById('tabContentChart').classList.toggle('hidden', tab !== 'chart');
-            document.getElementById('tabContentTools').classList.toggle('hidden', tab !== 'tools');
+        function exportToCSV() {
+            const students = window.studentsData || [];
+            let csvContent = "\uFEFFID;Apellidos y Nombre;Libros Leidos;Nivel\n";
+            students.forEach(s => {
+                const books = parseInt(s.books) || 0;
+                csvContent += `"${s.id}";"${s.name}";${books};"${getReadingLevel(books).title}"\n`;
+            });
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `lecturometro_${window.currentRoomCode}.csv`;
+            link.click();
+        }
+
+        function exportToJSON() {
+            const payload = { roomCode: window.currentRoomCode, classGoal: window.classGoal, students: window.studentsData };
+            const link = document.createElement("a");
+            link.href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(payload, null, 2));
+            link.download = `lecturometro_backup_${window.currentRoomCode}.json`;
+            link.click();
+        }
+
+        function handleFileImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    if (parsed && Array.isArray(parsed.students)) {
+                        window.studentsData = parsed.students;
+                        if (parsed.classGoal) window.classGoal = parsed.classGoal;
+                        renderApp();
+                        if (window.saveToFirestore) window.saveToFirestore();
+                        showToast("Datos importados");
+                    }
+                } catch (err) { alert("Archivo inválido"); }
+            };
+            reader.readAsText(file);
+        }
+
+        function promptEditClassGoal() {
+            showModal("Meta de Lectura", "Escribe el objetivo total de libros:", true, window.classGoal, (val) => {
+                const newGoal = parseInt(val);
+                if (newGoal > 0) {
+                    window.classGoal = newGoal;
+                    renderApp();
+                    if (window.saveToFirestore) window.saveToFirestore();
+                }
+            });
+        }
+
+        function confirmResetCounts() {
+            showModal("¿Poner a 0?", "Se reiniciarán los contadores de todos los alumnos.", false, "", () => {
+                window.studentsData.forEach(s => s.books = 0);
+                renderApp();
+                if (window.saveToFirestore) window.saveToFirestore();
+            });
+        }
+
+        function confirmResetToDefault() {
+            showModal("¿Restablecer Lista?", "Se volverá al grupo inicial de 24 alumnos.", false, "", () => {
+                location.reload();
+            });
+        }
+
+        let modalConfirmCallback = null;
+        function showModal(title, body, showInput, val, onConfirm) {
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalBody').innerText = body;
+            const inputContainer = document.getElementById('modalInputContainer');
+            if (showInput) {
+                inputContainer.classList.remove('hidden');
+                document.getElementById('modalInput').value = val;
+            } else inputContainer.classList.add('hidden');
+            modalConfirmCallback = onConfirm;
+            document.getElementById('modalConfirmBtn').onclick = () => {
+                if (modalConfirmCallback) modalConfirmCallback(showInput ? document.getElementById('modalInput').value : true);
+                closeModal();
+            };
+            document.getElementById('customModal').classList.remove('hidden');
+        }
+
+        function closeModal() { document.getElementById('customModal').classList.add('hidden'); }
+
+        function handleSearch() { renderStudentsList(); }
+        function clearSearch() { document.getElementById('searchInput').value = ''; renderStudentsList(); }
+        function handleSortChange() { renderStudentsList(); }
+
+        function showToast(msg) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = "bg-slate-900 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-lg border border-slate-700 flex items-center space-x-2 animate-pop pointer-events-auto";
+            toast.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400"></i> <span>${msg}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 2500);
         }
     </script>
 </body>
