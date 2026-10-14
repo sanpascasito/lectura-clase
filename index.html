@@ -57,37 +57,50 @@
     <header class="bg-indigo-900 text-white shadow-lg sticky top-0 z-30">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex flex-col md:flex-row items-center justify-between py-3 gap-3">
+                
                 <div class="flex items-center space-x-3">
                     <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white text-xl shadow-md">
                         <i class="fa-solid fa-book-open-reader"></i>
                     </div>
                     <div>
                         <h1 class="text-xl font-bold tracking-tight">Lecturómetro de Clase</h1>
-                        <p class="text-xs text-indigo-200">Sincronización en la nube en tiempo real</p>
+                        <div class="flex items-center gap-2 mt-0.5">
+                            <span id="roleBadge" class="px-2 py-0.5 rounded text-[10px] font-extrabold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                                Modo Padres (Solo Lectura)
+                            </span>
+                        </div>
                     </div>
                 </div>
 
+                <!-- Controles de Sala, Modo y Acceso -->
                 <div class="flex flex-wrap items-center gap-2 bg-indigo-950/60 p-2 rounded-xl border border-indigo-700/50">
                     <div class="flex items-center px-2 py-1 bg-indigo-900/80 rounded-lg border border-indigo-700 text-xs">
                         <i class="fa-solid fa-door-open text-indigo-300 mr-2"></i>
                         <span class="text-indigo-200 font-medium mr-1">Sala:</span>
                         <input type="text" id="roomCodeInput" value="aula-2026" 
                             class="bg-indigo-950 text-amber-300 font-mono font-bold px-2 py-0.5 rounded border border-indigo-600 focus:outline-none focus:border-amber-400 w-28 text-center text-sm">
-                        <button onclick="changeRoomCode()" class="ml-2 text-indigo-200 hover:text-white bg-indigo-700 hover:bg-indigo-600 px-2 py-0.5 rounded text-xs transition">
+                        <button onclick="changeRoomCode()" class="ml-2 text-indigo-200 hover:text-white bg-indigo-700 hover:bg-indigo-600 px-2 py-0.5 rounded text-xs transition" title="Unirse a esta sala">
                             <i class="fa-solid fa-rotate"></i>
                         </button>
                     </div>
 
-                    <div id="syncBadge" class="flex items-center px-3 py-1 rounded-lg text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                        <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping mr-2"></span>
+                    <div id="syncBadge" class="flex items-center px-3 py-1 rounded-lg text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse mr-2"></span>
                         <span id="syncStatusText">Conectando nube...</span>
                     </div>
 
-                    <button onclick="copyRoomLink()" class="px-2.5 py-1 text-xs bg-indigo-800 hover:bg-indigo-700 text-indigo-100 rounded-lg transition flex items-center gap-1.5">
+                    <!-- Botón para cambiar entre Modo Padres / Profesor -->
+                    <button id="toggleAuthBtn" onclick="handleAuthToggle()" class="px-3 py-1 text-xs font-bold bg-amber-500 hover:bg-amber-400 text-indigo-950 rounded-lg transition flex items-center gap-1.5 shadow-sm">
+                        <i id="authBtnIcon" class="fa-solid fa-lock"></i>
+                        <span id="authBtnText">Acceso Profesor</span>
+                    </button>
+
+                    <button onclick="copyRoomLink()" class="px-2.5 py-1 text-xs bg-indigo-800 hover:bg-indigo-700 text-indigo-100 rounded-lg transition flex items-center gap-1.5" title="Copiar enlace">
                         <i class="fa-solid fa-share-nodes"></i>
                         <span class="hidden sm:inline">Compartir</span>
                     </button>
                 </div>
+
             </div>
         </div>
     </header>
@@ -119,19 +132,19 @@
         <section class="bg-white p-4 rounded-2xl card-shadow border border-slate-100 space-y-4">
             <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
                 <div class="flex items-center space-x-2 bg-slate-100 p-1 rounded-xl">
-                    <button id="tabBtnList" onclick="switchTab('list')" class="px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 bg-white text-indigo-600 shadow-sm"><i class="fa-solid fa-list-ol"></i><span>Lista de Alumnos</span></button>
-                    <button id="tabBtnChart" onclick="switchTab('chart')" class="px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 text-slate-600 hover:text-slate-900"><i class="fa-solid fa-chart-column"></i><span>Histograma y Gráficos</span></button>
-                    <button id="tabBtnTools" onclick="switchTab('tools')" class="px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 text-slate-600 hover:text-slate-900"><i class="fa-solid fa-file-csv"></i><span>Importar / Exportar</span></button>
+                    <button id="tabBtnChart" onclick="switchTab('chart')" class="px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 bg-white text-indigo-600 shadow-sm"><i class="fa-solid fa-chart-column"></i><span>Histograma y Gráficos</span></button>
+                    <button id="tabBtnList" onclick="switchTab('list')" class="px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 text-slate-600 hover:text-slate-900"><i class="fa-solid fa-list-ol"></i><span>Lista de Alumnos</span></button>
+                    <button id="tabBtnTools" onclick="switchTab('tools')" class="px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 text-slate-600 hover:text-slate-900 hidden"><i class="fa-solid fa-file-csv"></i><span>Importar / Exportar</span></button>
                 </div>
                 <div class="flex items-center gap-2 text-xs font-medium text-slate-600 bg-indigo-50/50 px-3 py-1.5 rounded-xl border border-indigo-100">
                     <i class="fa-solid fa-bullseye text-indigo-600"></i>
                     <span>Meta de Clase: <strong id="classGoalTarget">100</strong> libros</span>
                     <div class="w-24 bg-slate-200 h-2 rounded-full overflow-hidden ml-1"><div id="classGoalProgress" class="bg-indigo-600 h-full rounded-full transition-all duration-500" style="width: 0%"></div></div>
-                    <button onclick="promptEditClassGoal()" class="text-slate-400 hover:text-indigo-600 ml-1"><i class="fa-solid fa-pen-to-square"></i></button>
+                    <button id="editGoalBtn" onclick="promptEditClassGoal()" class="text-slate-400 hover:text-indigo-600 ml-1 hidden" title="Editar meta"><i class="fa-solid fa-pen-to-square"></i></button>
                 </div>
             </div>
 
-            <div id="listControls" class="flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div id="listControls" class="flex flex-col sm:flex-row items-center justify-between gap-3 hidden">
                 <div class="relative w-full sm:w-72">
                     <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
                     <input type="text" id="searchInput" oninput="handleSearch()" placeholder="Buscar alumno..." class="w-full pl-9 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
@@ -155,27 +168,8 @@
             </div>
         </section>
 
-        <!-- Pestaña 1: Lista -->
-        <section id="tabContentList" class="space-y-4">
-            <div id="studentsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
-            <div id="studentsTableContainer" class="hidden bg-white rounded-2xl card-shadow border border-slate-100 overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm">
-                        <thead class="bg-slate-50 border-b border-slate-100 text-xs font-bold text-slate-500 uppercase tracking-wider">
-                            <tr><th class="py-3 px-4">#</th><th class="py-3 px-4">Alumno/a</th><th class="py-3 px-4 text-center">Nivel</th><th class="py-3 px-4 text-center">Libros Leídos</th><th class="py-3 px-4 text-center">Ajuste Rápido</th></tr>
-                        </thead>
-                        <tbody id="studentsTableBody" class="divide-y divide-slate-100"></tbody>
-                    </table>
-                </div>
-            </div>
-            <div id="noResults" class="hidden bg-white p-12 rounded-2xl text-center space-y-3 border border-slate-100">
-                <div class="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto text-2xl"><i class="fa-solid fa-user-slash"></i></div>
-                <h3 class="text-base font-bold text-slate-700">No se encontraron alumnos</h3>
-            </div>
-        </section>
-
-        <!-- Pestaña 2: Gráficos -->
-        <section id="tabContentChart" class="hidden space-y-6">
+        <!-- Pestaña 1: Histograma (Por defecto para Padres) -->
+        <section id="tabContentChart" class="space-y-6">
             <div class="bg-white p-4 rounded-2xl card-shadow border border-slate-100 flex flex-wrap items-center justify-between gap-3">
                 <div>
                     <h2 class="text-lg font-bold text-slate-900">Histograma y Análisis de Lectura</h2>
@@ -210,6 +204,25 @@
             </div>
         </section>
 
+        <!-- Pestaña 2: Lista -->
+        <section id="tabContentList" class="space-y-4 hidden">
+            <div id="studentsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
+            <div id="studentsTableContainer" class="hidden bg-white rounded-2xl card-shadow border border-slate-100 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-50 border-b border-slate-100 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                            <tr><th class="py-3 px-4">#</th><th class="py-3 px-4">Alumno/a</th><th class="py-3 px-4 text-center">Nivel</th><th class="py-3 px-4 text-center">Libros Leídos</th><th class="py-3 px-4 text-center edit-col hidden">Ajuste Rápido</th></tr>
+                        </thead>
+                        <tbody id="studentsTableBody" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div id="noResults" class="hidden bg-white p-12 rounded-2xl text-center space-y-3 border border-slate-100">
+                <div class="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto text-2xl"><i class="fa-solid fa-user-slash"></i></div>
+                <h3 class="text-base font-bold text-slate-700">No se encontraron alumnos</h3>
+            </div>
+        </section>
+
         <!-- Pestaña 3: Importar/Exportar -->
         <section id="tabContentTools" class="hidden space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -228,10 +241,11 @@
                 </div>
                 <div class="bg-white p-6 rounded-2xl card-shadow border border-red-100 space-y-4 md:col-span-2">
                     <div class="flex items-center justify-between">
-                        <div><h3 class="text-base font-bold text-slate-900">Opciones Avanzadas</h3><p class="text-xs text-slate-500">Resetear datos</p></div>
+                        <div><h3 class="text-base font-bold text-slate-900">Opciones Avanzadas</h3><p class="text-xs text-slate-500">Ajustes y clave de profesor</p></div>
                         <div class="flex gap-2">
-                            <button onclick="confirmResetCounts()" class="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-bold rounded-xl border border-red-200">Poner contadores a 0</button>
-                            <button onclick="confirmResetToDefault()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl">Restablecer Lista Original</button>
+                            <button onclick="promptChangePassword()" class="px-3 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded-xl border border-indigo-200"><i class="fa-solid fa-key mr-1"></i> Cambiar Contraseña</button>
+                            <button onclick="confirmResetCounts()" class="px-3 py-2 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-bold rounded-xl border border-red-200">Poner contadores a 0</button>
+                            <button onclick="confirmResetToDefault()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl">Restablecer Lista Original</button>
                         </div>
                     </div>
                 </div>
@@ -240,7 +254,7 @@
 
     </main>
 
-    <!-- Modal Popup -->
+    <!-- Modal Popup genérico -->
     <div id="customModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 card-shadow animate-pop border border-slate-100">
             <div class="flex items-center space-x-3">
@@ -248,7 +262,9 @@
                 <h3 id="modalTitle" class="text-base font-bold text-slate-900">Modal</h3>
             </div>
             <p id="modalBody" class="text-xs text-slate-600 leading-relaxed"></p>
-            <div id="modalInputContainer" class="hidden"><input type="number" id="modalInput" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500"></div>
+            <div id="modalInputContainer" class="hidden">
+                <input type="text" id="modalInput" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
             <div class="flex items-center justify-end space-x-2 pt-2">
                 <button id="modalCancelBtn" onclick="closeModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl">Cancelar</button>
                 <button id="modalConfirmBtn" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl">Aceptar</button>
@@ -266,14 +282,14 @@
 
         // === PEGA AQUÍ TUS CREDENCIALES DE FIREBASE ===
         const firebaseConfig = {
-      apiKey: "AIzaSyAYYcymoGpOwym3zg4f__sVDYtGpzT6MfQ",
-      authDomain: "termometro-lectura.firebaseapp.com",
-      databaseURL: "https://termometro-lectura-default-rtdb.europe-west1.firebasedatabase.app",
-      projectId: "termometro-lectura",
-      storageBucket: "termometro-lectura.firebasestorage.app",
-      messagingSenderId: "737083539850",
-      appId: "1:737083539850:web:96600ba9b4db305cc14873"
-};
+          apiKey: "AIzaSyAYYcymoGpOwym3zg4f__sVDYtGpzT6MfQ",
+          authDomain: "termometro-lectura.firebaseapp.com",
+          databaseURL: "https://termometro-lectura-default-rtdb.europe-west1.firebasedatabase.app",
+          projectId: "termometro-lectura",
+          storageBucket: "termometro-lectura.firebasestorage.app",
+          messagingSenderId: "737083539850",
+          appId: "1:737083539850:web:96600ba9b4db305cc14873"
+        };
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
@@ -309,8 +325,9 @@
         window.currentRoomCode = urlParams.get('room') || localStorage.getItem('lecturometro_room') || 'aula-2026';
         window.studentsData = [...DEFAULT_STUDENTS];
         window.classGoal = 100;
-        window.activeTab = 'list';
+        window.activeTab = 'chart';
         window.layoutView = 'cards';
+        window.isTeacherMode = false;
         window.histogramChartInstance = null;
         window.rankingChartInstance = null;
 
@@ -367,11 +384,81 @@
         window.addEventListener('DOMContentLoaded', () => {
             document.getElementById('roomCodeInput').value = window.currentRoomCode;
             window.initFirestoreSync(window.currentRoomCode);
+            applyRolePermissions();
         });
     </script>
 
-    <!-- Script de Funciones de Interfaz -->
+    <!-- Script de Interfaz de Usuario -->
     <script>
+        function getTeacherPassword() {
+            return localStorage.getItem('lecturometro_pass') || '1234';
+        }
+
+        function setTeacherPassword(newPass) {
+            localStorage.setItem('lecturometro_pass', newPass);
+        }
+
+        function handleAuthToggle() {
+            if (window.isTeacherMode) {
+                window.isTeacherMode = false;
+                applyRolePermissions();
+                showToast("Modo Padres activado (Solo lectura)");
+            } else {
+                showModal("Acceso Docente", "Introduce la contraseña para modificar datos:", true, "", (inputPass) => {
+                    if (inputPass === getTeacherPassword()) {
+                        window.isTeacherMode = true;
+                        applyRolePermissions();
+                        showToast("¡Modo Edición activado!");
+                    } else {
+                        showToast("Contraseña incorrecta", "error");
+                    }
+                }, "password");
+            }
+        }
+
+        function promptChangePassword() {
+            showModal("Cambiar Contraseña Docente", "Introduce la nueva contraseña de profesor:", true, "", (newPass) => {
+                if (newPass && newPass.trim().length >= 3) {
+                    setTeacherPassword(newPass.trim());
+                    showToast("Contraseña actualizada correctamente");
+                } else {
+                    showToast("Mínimo 3 caracteres", "error");
+                }
+            }, "text");
+        }
+
+        function applyRolePermissions() {
+            const roleBadge = document.getElementById('roleBadge');
+            const toggleBtnText = document.getElementById('authBtnText');
+            const toggleBtnIcon = document.getElementById('authBtnIcon');
+            const toolsTabBtn = document.getElementById('tabBtnTools');
+            const editGoalBtn = document.getElementById('editGoalBtn');
+
+            if (window.isTeacherMode) {
+                roleBadge.className = "px-2 py-0.5 rounded text-[10px] font-extrabold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
+                roleBadge.innerText = "Modo Edición (Profesor)";
+                toggleBtnText.innerText = "Salir de Edición";
+                toggleBtnIcon.className = "fa-solid fa-lock-open";
+
+                toolsTabBtn.classList.remove('hidden');
+                editGoalBtn.classList.remove('hidden');
+            } else {
+                roleBadge.className = "px-2 py-0.5 rounded text-[10px] font-extrabold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/30";
+                roleBadge.innerText = "Modo Padres (Solo Lectura)";
+                toggleBtnText.innerText = "Acceso Profesor";
+                toggleBtnIcon.className = "fa-solid fa-lock";
+
+                toolsTabBtn.classList.add('hidden');
+                editGoalBtn.classList.add('hidden');
+
+                if (window.activeTab === 'tools') {
+                    switchTab('chart');
+                }
+            }
+
+            renderApp();
+        }
+
         function getReadingLevel(books) {
             if (books <= 0) return { title: 'Aprendiz', icon: '🌱', bg: 'bg-slate-100', text: 'text-slate-600', border: 'border-slate-200' };
             if (books <= 3) return { title: 'Lector Inicial', icon: '📖', bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' };
@@ -463,6 +550,33 @@
                     const surname = nameParts[0] ? nameParts[0].trim() : '';
                     const initials = (surname.charAt(0) + (firstName.charAt(0) || '')).toUpperCase();
 
+                    const counterControls = window.isTeacherMode ? `
+                        <div class="bg-slate-50 p-3 rounded-xl flex items-center justify-between border border-slate-100">
+                            <button onclick="adjustBooks('${student.id}', -1)" 
+                                class="w-9 h-9 rounded-lg bg-white shadow-sm border border-slate-200 text-slate-700 font-bold hover:bg-slate-100 active:scale-95 transition flex items-center justify-center text-sm disabled:opacity-40"
+                                ${books <= 0 ? 'disabled' : ''}>
+                                <i class="fa-solid fa-minus"></i>
+                            </button>
+
+                            <div class="text-center px-2">
+                                <input type="number" min="0" value="${books}" 
+                                    onchange="setBooksDirect('${student.id}', this.value)"
+                                    class="w-14 text-center font-extrabold text-xl bg-transparent text-indigo-900 focus:outline-none focus:ring-1 focus:ring-indigo-400 rounded">
+                                <span class="block text-[10px] font-medium text-slate-400 uppercase tracking-wide">Libros</span>
+                            </div>
+
+                            <button onclick="adjustBooks('${student.id}', 1)" 
+                                class="w-9 h-9 rounded-lg bg-indigo-600 shadow-sm text-white font-bold hover:bg-indigo-700 active:scale-95 transition flex items-center justify-center text-sm">
+                                <i class="fa-solid fa-plus"></i>
+                            </button>
+                        </div>
+                    ` : `
+                        <div class="bg-indigo-50/50 p-3 rounded-xl flex items-center justify-between border border-indigo-100/50">
+                            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Libros Leídos</span>
+                            <span class="text-xl font-extrabold text-indigo-900 px-2">${books}</span>
+                        </div>
+                    `;
+
                     return `
                         <div class="bg-white rounded-2xl p-4 card-shadow border border-slate-100 hover:border-indigo-200 transition space-y-3 flex flex-col justify-between">
                             <div>
@@ -481,25 +595,7 @@
                                 </div>
                             </div>
 
-                            <div class="bg-slate-50 p-3 rounded-xl flex items-center justify-between border border-slate-100">
-                                <button onclick="adjustBooks('${student.id}', -1)" 
-                                    class="w-9 h-9 rounded-lg bg-white shadow-sm border border-slate-200 text-slate-700 font-bold hover:bg-slate-100 active:scale-95 transition flex items-center justify-center text-sm disabled:opacity-40"
-                                    ${books <= 0 ? 'disabled' : ''}>
-                                    <i class="fa-solid fa-minus"></i>
-                                </button>
-
-                                <div class="text-center px-2">
-                                    <input type="number" min="0" value="${books}" 
-                                        onchange="setBooksDirect('${student.id}', this.value)"
-                                        class="w-14 text-center font-extrabold text-xl bg-transparent text-indigo-900 focus:outline-none focus:ring-1 focus:ring-indigo-400 rounded">
-                                    <span class="block text-[10px] font-medium text-slate-400 uppercase tracking-wide">Libros</span>
-                                </div>
-
-                                <button onclick="adjustBooks('${student.id}', 1)" 
-                                    class="w-9 h-9 rounded-lg bg-indigo-600 shadow-sm text-white font-bold hover:bg-indigo-700 active:scale-95 transition flex items-center justify-center text-sm">
-                                    <i class="fa-solid fa-plus"></i>
-                                </button>
-                            </div>
+                            ${counterControls}
                         </div>
                     `;
                 }).join('');
@@ -507,9 +603,24 @@
                 gridContainer.classList.add('hidden');
                 tableContainer.classList.remove('hidden');
 
+                const editHeader = document.querySelector('.edit-col');
+                if (editHeader) {
+                    if (window.isTeacherMode) editHeader.classList.remove('hidden');
+                    else editHeader.classList.add('hidden');
+                }
+
                 tableBody.innerHTML = list.map((student, idx) => {
                     const books = parseInt(student.books) || 0;
                     const level = getReadingLevel(books);
+
+                    const quickEditCell = window.isTeacherMode ? `
+                        <td class="py-3 px-4 text-center">
+                            <div class="inline-flex items-center space-x-1">
+                                <button onclick="adjustBooks('${student.id}', -1)" ${books <= 0 ? 'disabled' : ''} class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-xs font-bold disabled:opacity-40">-1</button>
+                                <button onclick="adjustBooks('${student.id}', 1)" class="px-2 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-xs font-bold">+1</button>
+                            </div>
+                        </td>
+                    ` : '';
 
                     return `
                         <tr class="hover:bg-slate-50/80 transition">
@@ -521,12 +632,7 @@
                                 </span>
                             </td>
                             <td class="py-3 px-4 text-center font-extrabold text-indigo-900 text-base">${books}</td>
-                            <td class="py-3 px-4 text-center">
-                                <div class="inline-flex items-center space-x-1">
-                                    <button onclick="adjustBooks('${student.id}', -1)" ${books <= 0 ? 'disabled' : ''} class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-xs font-bold disabled:opacity-40">-1</button>
-                                    <button onclick="adjustBooks('${student.id}', 1)" class="px-2 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-xs font-bold">+1</button>
-                                </div>
-                            </td>
+                            ${quickEditCell}
                         </tr>
                     `;
                 }).join('');
@@ -534,6 +640,7 @@
         }
 
         function adjustBooks(studentId, delta) {
+            if (!window.isTeacherMode) return;
             const student = window.studentsData.find(s => s.id === studentId);
             if (!student) return;
             student.books = Math.max(0, (parseInt(student.books) || 0) + delta);
@@ -543,6 +650,7 @@
         }
 
         function setBooksDirect(studentId, val) {
+            if (!window.isTeacherMode) return;
             const student = window.studentsData.find(s => s.id === studentId);
             if (!student) return;
             student.books = Math.max(0, parseInt(val) || 0);
@@ -633,6 +741,8 @@
         }
 
         function switchTab(tab) {
+            if (tab === 'tools' && !window.isTeacherMode) return;
+
             window.activeTab = tab;
             const btnList = document.getElementById('tabBtnList');
             const btnChart = document.getElementById('tabBtnChart');
@@ -643,15 +753,15 @@
             document.getElementById('tabContentChart').classList.add('hidden');
             document.getElementById('tabContentTools').classList.add('hidden');
 
-            if (tab === 'list') {
-                btnList.className = "px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 bg-white text-indigo-600 shadow-sm";
-                document.getElementById('tabContentList').classList.remove('hidden');
-                document.getElementById('listControls').classList.remove('hidden');
-            } else if (tab === 'chart') {
+            if (tab === 'chart') {
                 btnChart.className = "px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 bg-white text-indigo-600 shadow-sm";
                 document.getElementById('tabContentChart').classList.remove('hidden');
                 document.getElementById('listControls').classList.add('hidden');
                 renderCharts();
+            } else if (tab === 'list') {
+                btnList.className = "px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 bg-white text-indigo-600 shadow-sm";
+                document.getElementById('tabContentList').classList.remove('hidden');
+                document.getElementById('listControls').classList.remove('hidden');
             } else if (tab === 'tools') {
                 btnTools.className = "px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 bg-white text-indigo-600 shadow-sm";
                 document.getElementById('tabContentTools').classList.remove('hidden');
@@ -671,6 +781,7 @@
         }
 
         function exportToCSV() {
+            if (!window.isTeacherMode) return;
             const students = window.studentsData || [];
             let csvContent = "\uFEFFID;Apellidos y Nombre;Libros Leidos;Nivel\n";
             students.forEach(s => {
@@ -685,6 +796,7 @@
         }
 
         function exportToJSON() {
+            if (!window.isTeacherMode) return;
             const payload = { roomCode: window.currentRoomCode, classGoal: window.classGoal, students: window.studentsData };
             const link = document.createElement("a");
             link.href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(payload, null, 2));
@@ -693,6 +805,7 @@
         }
 
         function handleFileImport(event) {
+            if (!window.isTeacherMode) return;
             const file = event.target.files[0];
             if (!file) return;
             const reader = new FileReader();
@@ -712,6 +825,7 @@
         }
 
         function promptEditClassGoal() {
+            if (!window.isTeacherMode) return;
             showModal("Meta de Lectura", "Escribe el objetivo total de libros:", true, window.classGoal, (val) => {
                 const newGoal = parseInt(val);
                 if (newGoal > 0) {
@@ -723,6 +837,7 @@
         }
 
         function confirmResetCounts() {
+            if (!window.isTeacherMode) return;
             showModal("¿Poner a 0?", "Se reiniciarán los contadores de todos los alumnos.", false, "", () => {
                 window.studentsData.forEach(s => s.books = 0);
                 renderApp();
@@ -731,23 +846,30 @@
         }
 
         function confirmResetToDefault() {
+            if (!window.isTeacherMode) return;
             showModal("¿Restablecer Lista?", "Se volverá al grupo inicial de 24 alumnos.", false, "", () => {
                 location.reload();
             });
         }
 
         let modalConfirmCallback = null;
-        function showModal(title, body, showInput, val, onConfirm) {
+        function showModal(title, body, showInput, val, onConfirm, inputType = "text") {
             document.getElementById('modalTitle').innerText = title;
             document.getElementById('modalBody').innerText = body;
             const inputContainer = document.getElementById('modalInputContainer');
+            const modalInput = document.getElementById('modalInput');
+            
             if (showInput) {
                 inputContainer.classList.remove('hidden');
-                document.getElementById('modalInput').value = val;
-            } else inputContainer.classList.add('hidden');
+                modalInput.type = inputType;
+                modalInput.value = val;
+            } else {
+                inputContainer.classList.add('hidden');
+            }
+
             modalConfirmCallback = onConfirm;
             document.getElementById('modalConfirmBtn').onclick = () => {
-                if (modalConfirmCallback) modalConfirmCallback(showInput ? document.getElementById('modalInput').value : true);
+                if (modalConfirmCallback) modalConfirmCallback(showInput ? modalInput.value : true);
                 closeModal();
             };
             document.getElementById('customModal').classList.remove('hidden');
@@ -759,11 +881,12 @@
         function clearSearch() { document.getElementById('searchInput').value = ''; renderStudentsList(); }
         function handleSortChange() { renderStudentsList(); }
 
-        function showToast(msg) {
+        function showToast(msg, type = "info") {
             const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
+            const icon = type === "error" ? "fa-circle-xmark text-red-400" : "fa-circle-check text-emerald-400";
             toast.className = "bg-slate-900 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-lg border border-slate-700 flex items-center space-x-2 animate-pop pointer-events-auto";
-            toast.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400"></i> <span>${msg}</span>`;
+            toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${msg}</span>`;
             container.appendChild(toast);
             setTimeout(() => toast.remove(), 2500);
         }
