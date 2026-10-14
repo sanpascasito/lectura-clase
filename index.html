@@ -191,7 +191,7 @@
                 </div>
             </div>
 
-            <!-- Ranking Individual Ampliado (Altura Dinámica sin Solapamientos) -->
+            <!-- Ranking Individual Ampliado -->
             <div class="bg-white p-6 rounded-2xl card-shadow border border-slate-100 space-y-4">
                 <div class="flex items-center justify-between">
                     <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
@@ -231,7 +231,7 @@
             </div>
         </section>
 
-        <!-- Pestaña 3: Importar/Exportar -->
+        <!-- Pestaña 3: Importar/Exportar (SÓLO PROFESOR) -->
         <section id="tabContentTools" class="hidden space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="bg-white p-6 rounded-2xl card-shadow border border-slate-100 space-y-4">
@@ -290,14 +290,14 @@
 
         // === PEGA AQUÍ TUS CREDENCIALES DE FIREBASE ===
         const firebaseConfig = {
-          apiKey: "AIzaSyAYYcymoGpOwym3zg4f__sVDYtGpzT6MfQ",
-          authDomain: "termometro-lectura.firebaseapp.com",
-          databaseURL: "https://termometro-lectura-default-rtdb.europe-west1.firebasedatabase.app",
-          projectId: "termometro-lectura",
-          storageBucket: "termometro-lectura.firebasestorage.app",
-          messagingSenderId: "737083539850",
-          appId: "1:737083539850:web:96600ba9b4db305cc14873"
-        };
+      apiKey: "AIzaSyAYYcymoGpOwym3zg4f__sVDYtGpzT6MfQ",
+      authDomain: "termometro-lectura.firebaseapp.com",
+      databaseURL: "https://termometro-lectura-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "termometro-lectura",
+      storageBucket: "termometro-lectura.firebasestorage.app",
+      messagingSenderId: "737083539850",
+      appId: "1:737083539850:web:96600ba9b4db305cc14873"
+};
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
@@ -425,6 +425,10 @@
         }
 
         function promptChangePassword() {
+            if (!window.isTeacherMode) {
+                showToast("Acceso denegado", "error");
+                return;
+            }
             showModal("Cambiar Contraseña Docente", "Introduce la nueva contraseña de profesor:", true, "", (newPass) => {
                 if (newPass && newPass.trim().length >= 3) {
                     setTeacherPassword(newPass.trim());
@@ -443,23 +447,30 @@
             const editGoalBtn = document.getElementById('editGoalBtn');
 
             if (window.isTeacherMode) {
-                roleBadge.className = "px-2 py-0.5 rounded text-[10px] font-extrabold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
-                roleBadge.innerText = "Modo Edición (Profesor)";
-                toggleBtnText.innerText = "Salir de Edición";
-                toggleBtnIcon.className = "fa-solid fa-lock-open";
+                if (roleBadge) {
+                    roleBadge.className = "px-2 py-0.5 rounded text-[10px] font-extrabold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
+                    roleBadge.innerText = "Modo Edición (Profesor)";
+                }
+                if (toggleBtnText) toggleBtnText.innerText = "Salir de Edición";
+                if (toggleBtnIcon) toggleBtnIcon.className = "fa-solid fa-lock-open";
 
-                toolsTabBtn.classList.remove('hidden');
-                editGoalBtn.classList.remove('hidden');
+                if (toolsTabBtn) toolsTabBtn.classList.remove('hidden');
+                if (editGoalBtn) editGoalBtn.classList.remove('hidden');
             } else {
-                roleBadge.className = "px-2 py-0.5 rounded text-[10px] font-extrabold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/30";
-                roleBadge.innerText = "Modo Padres (Solo Lectura)";
-                toggleBtnText.innerText = "Acceso Profesor";
-                toggleBtnIcon.className = "fa-solid fa-lock";
+                if (roleBadge) {
+                    roleBadge.className = "px-2 py-0.5 rounded text-[10px] font-extrabold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/30";
+                    roleBadge.innerText = "Modo Padres (Solo Lectura)";
+                }
+                if (toggleBtnText) toggleBtnText.innerText = "Acceso Profesor";
+                if (toggleBtnIcon) toggleBtnIcon.className = "fa-solid fa-lock";
 
-                toolsTabBtn.classList.add('hidden');
-                editGoalBtn.classList.add('hidden');
+                if (toolsTabBtn) toolsTabBtn.classList.add('hidden');
+                if (editGoalBtn) editGoalBtn.classList.add('hidden');
 
-                if (window.activeTab === 'tools') switchTab('chart');
+                if (window.activeTab === 'tools') {
+                    switchTab('chart');
+                    return;
+                }
             }
 
             renderApp();
@@ -770,29 +781,60 @@
         }
 
         function switchTab(tab) {
+            // 1. Bloqueo de seguridad estricto
+            if (tab === 'tools' && !window.isTeacherMode) {
+                showToast("Acceso restringido a profesores", "error");
+                return;
+            }
+
             window.activeTab = tab;
-            const btnList = document.getElementById('tabBtnList');
+
             const btnChart = document.getElementById('tabBtnChart');
+            const btnList = document.getElementById('tabBtnList');
             const btnTools = document.getElementById('tabBtnTools');
 
-            [btnList, btnChart, btnTools].forEach(b => b.className = "px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 text-slate-600 hover:text-slate-900");
-            document.getElementById('tabContentList').classList.add('hidden');
-            document.getElementById('tabContentChart').classList.add('hidden');
-            document.getElementById('tabContentTools').classList.add('hidden');
+            const contentChart = document.getElementById('tabContentChart');
+            const contentList = document.getElementById('tabContentList');
+            const contentTools = document.getElementById('tabContentTools');
+
+            // 2. Resetear estilos activos sin sobreescribir 'hidden'
+            [btnChart, btnList, btnTools].forEach(btn => {
+                if (!btn) return;
+                btn.classList.remove('bg-white', 'text-indigo-600', 'shadow-sm');
+                btn.classList.add('text-slate-600', 'hover:text-slate-900');
+            });
+
+            [contentChart, contentList, contentTools].forEach(content => {
+                if (content) content.classList.add('hidden');
+            });
 
             if (tab === 'chart') {
-                btnChart.className = "px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 bg-white text-indigo-600 shadow-sm";
-                document.getElementById('tabContentChart').classList.remove('hidden');
-                document.getElementById('listControls').classList.add('hidden');
+                if (btnChart) {
+                    btnChart.classList.add('bg-white', 'text-indigo-600', 'shadow-sm');
+                    btnChart.classList.remove('text-slate-600', 'hover:text-slate-900');
+                }
+                if (contentChart) contentChart.classList.remove('hidden');
+                document.getElementById('listControls')?.classList.add('hidden');
                 renderCharts();
             } else if (tab === 'list') {
-                btnList.className = "px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 bg-white text-indigo-600 shadow-sm";
-                document.getElementById('tabContentList').classList.remove('hidden');
-                document.getElementById('listControls').classList.remove('hidden');
-            } else if (tab === 'tools') {
-                btnTools.className = "px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 bg-white text-indigo-600 shadow-sm";
-                document.getElementById('tabContentTools').classList.remove('hidden');
-                document.getElementById('listControls').classList.add('hidden');
+                if (btnList) {
+                    btnList.classList.add('bg-white', 'text-indigo-600', 'shadow-sm');
+                    btnList.classList.remove('text-slate-600', 'hover:text-slate-900');
+                }
+                if (contentList) contentList.classList.remove('hidden');
+                document.getElementById('listControls')?.classList.remove('hidden');
+            } else if (tab === 'tools' && window.isTeacherMode) {
+                if (btnTools) {
+                    btnTools.classList.add('bg-white', 'text-indigo-600', 'shadow-sm');
+                    btnTools.classList.remove('text-slate-600', 'hover:text-slate-900');
+                }
+                if (contentTools) contentTools.classList.remove('hidden');
+                document.getElementById('listControls')?.classList.add('hidden');
+            }
+
+            // 3. Garantizar que 'tabBtnTools' continúe oculto si no se está en modo profesor
+            if (!window.isTeacherMode && btnTools) {
+                btnTools.classList.add('hidden');
             }
         }
 
@@ -917,10 +959,6 @@
             container.appendChild(toast);
             setTimeout(() => toast.remove(), 2500);
         }
-
-        window.addEventListener('DOMContentLoaded', () => {
-            applyRolePermissions();
-        });
     </script>
 </body>
 </html>
